@@ -2,11 +2,14 @@
 
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
+import { ReactionPicker, ReactionDisplay } from './ReactionPicker';
 import type { LocalMessage } from '@/lib/store/chatStore';
 
 interface MessageBubbleProps {
   message: LocalMessage;
   isMine: boolean;
+  onReact?: (messageId: string, emoji: string) => void;
+  currentUserId?: string;
 }
 
 function formatTime(timestamp: string): string {
@@ -32,9 +35,12 @@ function StatusIcon({ message }: { message: LocalMessage }) {
 export const MessageBubble = memo(function MessageBubble({
   message,
   isMine,
+  onReact,
+  currentUserId,
 }: MessageBubbleProps) {
   const displayText = message.plaintext ?? '🔒 Encrypted';
   const isDecrypting = !message.plaintext && !message.optimistic;
+  const messageId = message._id ?? message.localId ?? '';
 
   const expiresAt = message.expiresAt ? new Date(message.expiresAt) : null;
   const now = new Date();
@@ -45,48 +51,75 @@ export const MessageBubble = memo(function MessageBubble({
   return (
     <div
       className={cn(
-        'flex w-full mb-1 animate-slide-up',
+        'group flex w-full mb-1 animate-slide-up',
         isMine ? 'justify-end' : 'justify-start'
       )}
     >
-      <div
-        className={cn(
-          'relative max-w-[70%] rounded-2xl px-4 py-2 text-sm shadow-sm',
-          isMine
-            ? 'bg-bubble-sent text-white rounded-br-sm'
-            : 'bg-bubble-received text-text-primary rounded-bl-sm',
-          message.optimistic && 'opacity-70',
-          isDecrypting && 'animate-pulse'
-        )}
-      >
-        {/* Burn-after-reading indicator */}
-        {message.burnAfterReading && (
-          <span className="mr-1" title="Burns after reading" aria-label="Burn after reading">
-            🔥
-          </span>
+      <div className="flex items-end gap-1 max-w-[70%]">
+        {/* Reaction picker - shown on hover for received messages */}
+        {!isMine && onReact && (
+          <ReactionPicker
+            onReact={(emoji) => onReact(messageId, emoji)}
+            className="order-2"
+          />
         )}
 
-        <span className={cn(isDecrypting && 'text-text-muted italic')}>
-          {isDecrypting ? 'Decrypting…' : displayText}
-        </span>
-
-        {/* Expiry timer */}
-        {expiresAt && (
-          <span className="ml-2 text-xs opacity-60">
-            ⏱ {Math.max(0, Math.round((expiresAt.getTime() - now.getTime()) / 60000))}m
-          </span>
-        )}
-
-        {/* Timestamp + status */}
         <div
           className={cn(
-            'mt-1 flex items-center gap-1 text-[10px]',
-            isMine ? 'justify-end text-purple-200' : 'justify-start text-text-muted'
+            'relative rounded-2xl px-4 py-2 text-sm shadow-sm',
+            isMine
+              ? 'bg-bubble-sent text-white rounded-br-sm'
+              : 'bg-bubble-received text-text-primary rounded-bl-sm',
+            message.optimistic && 'opacity-70',
+            isDecrypting && 'animate-pulse'
           )}
         >
-          <span>{formatTime(message.timestamp)}</span>
-          {isMine && <StatusIcon message={message} />}
+          {/* Burn-after-reading indicator */}
+          {message.burnAfterReading && (
+            <span className="mr-1" title="Burns after reading" aria-label="Burn after reading">
+              🔥
+            </span>
+          )}
+
+          <span className={cn(isDecrypting && 'text-text-muted italic')}>
+            {isDecrypting ? 'Decrypting…' : displayText}
+          </span>
+
+          {/* Expiry timer */}
+          {expiresAt && (
+            <span className="ml-2 text-xs opacity-60">
+              ⏱ {Math.max(0, Math.round((expiresAt.getTime() - now.getTime()) / 60000))}m
+            </span>
+          )}
+
+          {/* Timestamp + status */}
+          <div
+            className={cn(
+              'mt-1 flex items-center gap-1 text-[10px]',
+              isMine ? 'justify-end text-purple-200' : 'justify-start text-text-muted'
+            )}
+          >
+            <span>{formatTime(message.timestamp)}</span>
+            {isMine && <StatusIcon message={message} />}
+          </div>
+
+          {/* Reactions display */}
+          {message.reactions && Object.keys(message.reactions).length > 0 && (
+            <ReactionDisplay
+              reactions={message.reactions}
+              currentUserId={currentUserId}
+              onToggle={(emoji) => onReact?.(messageId, emoji)}
+            />
+          )}
         </div>
+
+        {/* Reaction picker - shown on hover for sent messages */}
+        {isMine && onReact && (
+          <ReactionPicker
+            onReact={(emoji) => onReact(messageId, emoji)}
+            className="order-first"
+          />
+        )}
       </div>
     </div>
   );

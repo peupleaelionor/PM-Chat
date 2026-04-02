@@ -16,6 +16,8 @@ import { errorHandler } from "./middleware/errorHandler";
 import { clearBurnTimers } from "./socket/handlers/message";
 import { Message } from "./models/Message";
 import { Conversation } from "./models/Conversation";
+import { networkGuard, integrityGuard, sessionGuard } from "./middleware/securityGuards";
+import { cleanupSocketBuckets } from "./middleware/socketRateLimiter";
 
 // ── Route imports ─────────────────────────────────────────────────────────────
 import healthRouter from "./routes/health";
@@ -64,8 +66,17 @@ app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 // Input sanitization (strip NUL bytes)
 app.use(sanitizeBody);
 
+// Security guards
+app.use(networkGuard);
+app.use(integrityGuard);
+
 // Global rate limiter
 app.use(globalRateLimiter);
+
+// Session guard (applied after auth routes for authenticated routes)
+app.use("/api/conversations", sessionGuard);
+app.use("/api/messages", sessionGuard);
+app.use("/api/attachments", sessionGuard);
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
@@ -122,18 +133,27 @@ async function start(): Promise<void> {
 
   const expiryJob = startMessageExpiryJob();
 
+  // Socket rate limiter bucket cleanup
+  const socketCleanupJob = setInterval(cleanupSocketBuckets, 30_000);
+
   httpServer.listen(config.PORT, config.HOST, () => {
-    logger.info(`🚀 PM-Chat server listening`, {
-      host: config.HOST,
-      port: config.PORT,
-      env: config.NODE_ENV,
-    });
+    logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    logger.info(`🚀 PM-Chat server ready`);
+    logger.info(`   Environment: ${config.NODE_ENV}`);
+    logger.info(`   Security mode: ${config.securityMode}`);
+    logger.info(`   Port: ${config.PORT}`);
+    logger.info(`   Host: ${config.HOST}`);
+    logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    if (!config.isProduction) {
+      logger.warn("⚠️  SECURITY MODE: DEV — Do not use in production without proper secrets");
+    }
   });
 
   // ── Graceful shutdown ─────────────────────────────────────────────────────
   async function shutdown(signal: string): Promise<void> {
     logger.info(`Received ${signal}, shutting down…`);
     clearInterval(expiryJob);
+    clearInterval(socketCleanupJob);
     clearBurnTimers();
 
     httpServer.close(async () => {

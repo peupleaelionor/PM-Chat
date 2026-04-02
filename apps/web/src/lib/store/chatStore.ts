@@ -8,6 +8,8 @@ export interface LocalMessage extends Message {
   optimistic?: boolean;
   // Optimistic local ID before server assigns real _id
   localId?: string;
+  // Emoji reactions: emoji -> array of userIds
+  reactions?: Record<string, string[]>;
 }
 
 interface TypingState {

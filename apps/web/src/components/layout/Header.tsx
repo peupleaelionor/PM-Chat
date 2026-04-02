@@ -5,6 +5,9 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 
+const isProduction = process.env.NODE_ENV === 'production';
+const securityMode = isProduction ? 'PRODUCTION' : 'DEV';
+
 export function Header() {
   const { nickname, userId } = useAuthStore();
 
@@ -20,6 +23,16 @@ export function Header() {
         <span className="text-accent-primary font-bold text-lg">PM-Chat</span>
         <span className="text-[10px] text-accent-secondary bg-bg-tertiary px-2 py-0.5 rounded-full">
           E2EE
+        </span>
+        <span
+          className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono ${
+            isProduction
+              ? 'bg-green-900/30 text-green-400 border border-green-800'
+              : 'bg-yellow-900/30 text-yellow-400 border border-yellow-800'
+          }`}
+          title={`Security Mode: ${securityMode}`}
+        >
+          {isProduction ? '🔒' : '⚠️'} {securityMode}
         </span>
       </div>
 

@@ -6,6 +6,7 @@ import { Message } from "../../models/Message";
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "../../redis";
 import { parseSocketPayload } from "../guards";
 import { logger } from "../../utils/logger";
+import { recordReplayAttempt } from "../../utils/securityMonitor";
 
 // Track active burn-after-reading timers so they can be cancelled on shutdown
 const burnTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -66,6 +67,7 @@ export function registerMessageHandlers(io: IOServer, socket: Socket): void {
       // NX = set only if not exists; returns null if already set
       const nonceSet = await redis.set(nonceKey, "1", "EX", REDIS_TTL.nonce, "NX");
       if (nonceSet === null) {
+        recordReplayAttempt(socket.handshake.address);
         ack?.({ error: "Duplicate message nonce detected (replay attack)" });
         return;
       }
