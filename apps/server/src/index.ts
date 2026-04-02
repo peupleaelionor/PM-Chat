@@ -133,8 +133,8 @@ async function start(): Promise<void> {
 
   const expiryJob = startMessageExpiryJob();
 
-    // Socket rate limiter bucket cleanup
-    const socketCleanupJob = setInterval(cleanupSocketBuckets, 30_000);
+  // Socket rate limiter bucket cleanup
+  const socketCleanupJob = setInterval(cleanupSocketBuckets, 30_000);
 
   httpServer.listen(config.PORT, config.HOST, () => {
     logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
