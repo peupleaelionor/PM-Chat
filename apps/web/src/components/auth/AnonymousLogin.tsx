@@ -9,6 +9,7 @@ import {
   exportPublicKey,
   storePrivateKey,
   loadPrivateKey,
+  importPublicKey,
 } from '@/lib/crypto';
 import { register, refreshTokens, setAccessToken } from '@/lib/api';
 
@@ -60,18 +61,22 @@ export function AnonymousLogin({ children }: { children: React.ReactNode }) {
               refreshToken: newRefresh,
             });
 
-            // Restore private key from session storage
+            // Restore private key and public key JWK from session storage
             const privateKey = await loadPrivateKey();
-            if (privateKey) {
-              // Reconstruct the key pair (we can't reconstruct the public key from just the private key
-              // in Web Crypto, so we generate fresh but keep the old public key registered on server)
-              // For a real app, we'd also store/cache the public key. Here we generate a new pair.
-              const kp = await generateKeyPair();
-              setKeyPair(kp);
-              await storePrivateKey(kp.privateKey);
+            const publicKeyJwk = sessionStorage.getItem('pm_chat_pub_key');
+
+            if (privateKey && publicKeyJwk) {
+              // Reconstruct key pair from stored private key + public key JWK
+              const publicKey = await importPublicKey(publicKeyJwk);
+              setKeyPair({ privateKey, publicKey });
             } else {
-              // Generate new key pair (public key already on server from registration)
+              // Keys lost (e.g. tab closed) – generate a fresh pair.
+              // The server already has the old public key, so E2EE key exchange
+              // will fail until the user re-registers. For a full app we'd update
+              // the server's stored public key via a PATCH endpoint here.
               const kp = await generateKeyPair();
+              const pkJwk = await exportPublicKey(kp.publicKey);
+              sessionStorage.setItem('pm_chat_pub_key', pkJwk);
               setKeyPair(kp);
               await storePrivateKey(kp.privateKey);
             }
@@ -103,6 +108,12 @@ export function AnonymousLogin({ children }: { children: React.ReactNode }) {
 
         setKeyPair(kp);
         await storePrivateKey(kp.privateKey);
+        // Store public key JWK so we can reconstruct the pair on session refresh
+        try {
+          sessionStorage.setItem('pm_chat_pub_key', publicKeyJwk);
+        } catch {
+          // ignore
+        }
 
         setStatus('ready');
       } catch (err) {
