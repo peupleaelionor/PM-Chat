@@ -6,6 +6,7 @@ import { registerPresenceHandlers } from "./handlers/presence";
 import { registerConversationHandlers } from "./handlers/conversation";
 import { registerMessageHandlers } from "./handlers/message";
 import { logger } from "../utils/logger";
+import { isSocketRateLimited } from "../middleware/socketRateLimiter";
 
 export function initSocket(httpServer: HTTPServer): IOServer {
   const io = new IOServer(httpServer, {
@@ -32,6 +33,15 @@ export function initSocket(httpServer: HTTPServer): IOServer {
     // Each user joins a personal room so they can receive direct events
     // (e.g. key:received, user:presence notifications)
     void socket.join(`user:${socket.userId}`);
+
+    // Socket-level rate limiting middleware
+    socket.use((event, next) => {
+      if (isSocketRateLimited(socket)) {
+        logger.debug("Socket event rate limited", { socketId: socket.id, event: event[0] });
+        return;
+      }
+      next();
+    });
 
     // Register domain handlers
     registerPresenceHandlers(io, socket);
