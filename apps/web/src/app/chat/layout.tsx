@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { useSocket } from '@/hooks/useSocket';
+import { ConnectionStatus } from '@/components/ui/ConnectionStatus';
 
 export default function ChatLayout({
   children,
@@ -16,6 +17,8 @@ export default function ChatLayout({
   const conversationId = params?.['conversationId'] as string | undefined;
 
   return (
+    <>
+    <ConnectionStatus />
     <div className="flex h-screen overflow-hidden bg-bg-primary">
       {/* Sidebar – hidden on mobile when conversation is active */}
       <div
@@ -37,5 +40,6 @@ export default function ChatLayout({
         {children}
       </main>
     </div>
+    </>
   );
 }
