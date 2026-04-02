@@ -13,6 +13,7 @@ import { initSocket } from "./socket";
 import { globalRateLimiter } from "./middleware/rateLimiter";
 import { sanitizeBody } from "./middleware/inputGuard";
 import { errorHandler } from "./middleware/errorHandler";
+import { clearBurnTimers } from "./socket/handlers/message";
 import { Message } from "./models/Message";
 import { Conversation } from "./models/Conversation";
 
@@ -133,6 +134,7 @@ async function start(): Promise<void> {
   async function shutdown(signal: string): Promise<void> {
     logger.info(`Received ${signal}, shutting down…`);
     clearInterval(expiryJob);
+    clearBurnTimers();
 
     httpServer.close(async () => {
       await Promise.allSettled([disconnectDB(), disconnectRedis()]);
@@ -144,7 +146,7 @@ async function start(): Promise<void> {
     setTimeout(() => {
       logger.error("Forced shutdown after timeout");
       process.exit(1);
-    }, 10_000).unref();
+    }, config.SHUTDOWN_TIMEOUT_MS).unref();
   }
 
   process.on("SIGTERM", () => void shutdown("SIGTERM"));

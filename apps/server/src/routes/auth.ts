@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { Types } from "mongoose";
 import { User } from "../models/User";
 import { validate } from "../middleware/inputGuard";
 import { authRateLimiter } from "../middleware/rateLimiter";
@@ -101,8 +102,14 @@ router.post(
     try {
       const { userId, password } = req.body as z.infer<typeof loginSchema>;
 
+      // Validate that userId is a well-formed ObjectId before querying
+      if (!Types.ObjectId.isValid(userId)) {
+        res.status(401).json({ error: "Invalid credentials" });
+        return;
+      }
+
       // Select passwordHash explicitly (it's excluded from default projection)
-      const user = await User.findById(userId).select("+passwordHash");
+      const user = await User.findById(new Types.ObjectId(userId)).select("+passwordHash");
 
       if (!user || !user.passwordHash) {
         res.status(401).json({ error: "Invalid credentials" });

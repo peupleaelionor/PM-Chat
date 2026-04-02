@@ -23,6 +23,7 @@ const envSchema = z.object({
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
 
   MESSAGE_EXPIRY_JOB_INTERVAL_MS: z.coerce.number().int().positive().default(60_000),
+  SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 });
 
 const parsed = envSchema.safeParse(process.env);

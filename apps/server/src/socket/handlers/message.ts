@@ -7,6 +7,15 @@ import { getRedis, REDIS_KEYS, REDIS_TTL } from "../../redis";
 import { parseSocketPayload } from "../guards";
 import { logger } from "../../utils/logger";
 
+// Track active burn-after-reading timers so they can be cancelled on shutdown
+const burnTimers = new Set<ReturnType<typeof setTimeout>>();
+
+/** Cancel all pending burn-after-reading timers (call during graceful shutdown). */
+export function clearBurnTimers(): void {
+  for (const t of burnTimers) clearTimeout(t);
+  burnTimers.clear();
+}
+
 // ── Schemas ──────────────────────────────────────────────────────────────────
 
 const sendMessageSchema = z.object({
@@ -195,12 +204,17 @@ export function registerMessageHandlers(io: IOServer, socket: Socket): void {
         status: "read",
       });
 
-      // Burn-after-reading: schedule message deletion after a brief grace period
+      // Burn-after-reading: schedule message deletion after a brief grace period.
+      // The timer is unref'd so it won't keep the process alive during shutdown;
+      // the MongoDB TTL index acts as a fallback for messages missed during a crash.
       if (message.burnAfterReading) {
-        setTimeout(async () => {
+        const timer = setTimeout(async () => {
+          burnTimers.delete(timer);
           await Message.deleteOne({ _id: message._id });
           logger.debug("Burn-after-reading message deleted", { messageId: message.id });
         }, 3000); // 3-second grace period so the reader's UI can display it
+        timer.unref();
+        burnTimers.add(timer);
       }
 
       ack?.({ ok: true });
