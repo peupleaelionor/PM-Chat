@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.npm
+
+# Workspace-level lock files (root package-lock.json is authoritative)
+apps/*/package-lock.json
+packages/*/package-lock.json
+
+# Next.js
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build
+dist/
+build/
+
+# Uploads
+apps/server/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+*.swp
+
+# Testing
+coverage/
+
+# Docker
+.dockerignore
