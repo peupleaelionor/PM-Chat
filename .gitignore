@@ -2,6 +2,10 @@
 node_modules/
 .npm
 
+# Workspace-level lock files (root package-lock.json is authoritative)
+apps/*/package-lock.json
+packages/*/package-lock.json
+
 # Next.js
 .next/
 out/
