@@ -47,7 +47,7 @@ services:
       MONGODB_URI: mongodb://mongodb:27017/pmchat
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - "4000:4000"

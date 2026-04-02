@@ -40,6 +40,7 @@ export const MessageBubble = memo(function MessageBubble({
 }: MessageBubbleProps) {
   const displayText = message.plaintext ?? '🔒 Encrypted';
   const isDecrypting = !message.plaintext && !message.optimistic;
+  const messageId = message._id ?? message.localId ?? '';
 
   const expiresAt = message.expiresAt ? new Date(message.expiresAt) : null;
   const now = new Date();
@@ -58,7 +59,7 @@ export const MessageBubble = memo(function MessageBubble({
         {/* Reaction picker - shown on hover for received messages */}
         {!isMine && onReact && (
           <ReactionPicker
-            onReact={(emoji) => onReact(message._id, emoji)}
+            onReact={(emoji) => onReact(messageId, emoji)}
             className="order-2"
           />
         )}
@@ -107,7 +108,7 @@ export const MessageBubble = memo(function MessageBubble({
             <ReactionDisplay
               reactions={message.reactions}
               currentUserId={currentUserId}
-              onToggle={(emoji) => onReact?.(message._id, emoji)}
+              onToggle={(emoji) => onReact?.(messageId, emoji)}
             />
           )}
         </div>
@@ -115,7 +116,7 @@ export const MessageBubble = memo(function MessageBubble({
         {/* Reaction picker - shown on hover for sent messages */}
         {isMine && onReact && (
           <ReactionPicker
-            onReact={(emoji) => onReact(message._id, emoji)}
+            onReact={(emoji) => onReact(messageId, emoji)}
             className="order-first"
           />
         )}
