@@ -1,0 +1,10 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@pm-chat-api-url",
+    "NEXT_PUBLIC_SOCKET_URL": "@pm-chat-socket-url"
+  }
+}
