@@ -1,260 +1,294 @@
-# PM-Chat
+# 🔒 PM-Chat — Zero-Knowledge Encrypted Messaging
 
-> **Private, ephemeral, end-to-end encrypted messaging. Zero knowledge — the server never sees your messages.**
+> **Private. Anonymous. End-to-end encrypted. The server never sees your messages.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)](https://typescriptlang.org)
 
 ---
 
 ## What is PM-Chat?
 
-PM-Chat is an open-source, anonymous chat platform built for privacy. Users register with only a nickname — no email, no phone number. All messages are encrypted client-side using ECDH key exchange and AES-GCM 256-bit encryption before they leave your device. The server stores only ciphertext it cannot read.
+PM-Chat is an open-source, anonymous, end-to-end encrypted messaging platform. Users register with only a nickname — **no email, no phone number, no password**. All messages are encrypted in the browser using ECDH key exchange and AES-GCM 256-bit encryption before they leave your device. The server stores only ciphertext it cannot read.
 
-Key properties:
-- **End-to-end encrypted (E2EE)** — messages are encrypted/decrypted entirely in the browser
-- **Zero-knowledge server** — the server never has access to plaintext content or private keys
-- **Anonymous** — no personally identifiable information required
-- **Ephemeral** — optional burn-after-reading and self-destructing conversations
-- **Real-time** — Socket.IO-powered presence, typing indicators, and delivery receipts
-- **Self-healing** — built-in security monitoring, rate limiting, and auto-defense
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔐 **End-to-End Encryption** | ECDH P-256 key exchange + AES-GCM 256-bit — messages encrypted/decrypted entirely in the browser |
+| 👻 **Zero-Knowledge Server** | Server stores only opaque ciphertext — cannot decrypt any message |
+| 🎭 **Anonymous** | No PII required — register with a nickname only |
+| 💨 **Ephemeral** | Burn-after-reading messages and self-destructing conversations |
+| ⚡ **Real-Time** | Socket.IO-powered presence, typing indicators, and delivery receipts |
+| 🛡️ **Defense-in-Depth** | Rate limiting, security guards, auto-blocking, input sanitization |
+| 🔄 **Replay Protection** | Per-message nonces validated via Redis SET NX |
+| 📎 **Encrypted Attachments** | File uploads encrypted client-side before transmission |
 
 ---
 
 ## Architecture
 
 ```
-pm-chat/                   ← monorepo root (npm workspaces)
+pm-chat/
 ├── apps/
 │   ├── server/            ← Express + Socket.IO + MongoDB + Redis
-│   └── web/               ← Next.js 15 App Router + Tailwind CSS
-└── packages/
-    └── shared/            ← Shared TypeScript types & Zod validators
+│   └── web/               ← Next.js 15 + Tailwind CSS + Web Crypto API
+├── packages/
+│   └── shared/            ← TypeScript types + Zod validators
+└── docs/                  ← Architecture, security, protocol documentation
+```
+
+### How Encryption Works
+
+```
+  Alice                          Server                         Bob
+    │                              │                              │
+    │ 1. Generate ECDH key pair    │   1. Generate ECDH key pair  │
+    │ 2. Send public key ─────────►│◄────────── Send public key  2.│
+    │                              │                              │
+    │ 3. Fetch Bob's public key    │                              │
+    │◄─────────────────────────────│                              │
+    │                              │                              │
+    │ 4. Derive shared AES key     │                              │
+    │    ECDH(privA, pubB)         │                              │
+    │                              │                              │
+    │ 5. Encrypt message           │                              │
+    │    AES-GCM-256(key, msg)     │                              │
+    │                              │                              │
+    │ 6. Send ciphertext ─────────►│ 7. Store ciphertext          │
+    │                              │    (cannot decrypt)          │
+    │                              │────────────► 8. Receive      │
+    │                              │                              │
+    │                              │   9. Derive shared AES key   │
+    │                              │      ECDH(privB, pubA)       │
+    │                              │                              │
+    │                              │  10. Decrypt message          │
+    │                              │      AES-GCM-256(key, ct)    │
+    └──────────────────────────────┴──────────────────────────────┘
 ```
 
 ### Tech Stack
 
 | Layer      | Technology |
 |------------|------------|
-| Frontend   | Next.js 15, React 18, Tailwind CSS, Zustand, TanStack Query + Virtual |
+| Frontend   | Next.js 15, React 18, Tailwind CSS, Zustand, TanStack Query |
 | Backend    | Node.js, Express, Socket.IO, MongoDB (Mongoose), Redis (ioredis) |
 | Crypto     | Web Crypto API — ECDH P-256 + AES-GCM 256 |
 | Auth       | JWT (access + refresh tokens), anonymous registration |
-| Realtime   | Socket.IO with JWT-authenticated connections |
-| Security   | Helmet, rate limiting, security guards, auto-defense, monitoring |
-| Shared     | `@pm-chat/shared` — Zod schemas + TypeScript interfaces |
+| Validation | Zod schemas (shared between client & server) |
+| Security   | Helmet, rate limiting, security guards, auto-defense, CSP |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js ≥ 18, npm ≥ 9
+- MongoDB 7, Redis 7 (or use Docker)
+
+### Development
+
+```bash
+git clone https://github.com/peupleaelionor/PM-Chat.git
+cd PM-Chat
+npm install
+
+# Copy environment files
+cp .env.example .env
+cp apps/server/.env.example apps/server/.env
+
+# Start databases (Docker)
+docker compose up mongodb redis -d
+
+# Start dev servers (server:4000 + web:3000)
+npm run dev
+```
+
+> **Dev-safe mode**: In development, the server auto-generates temporary secrets and uses localhost defaults. No configuration required.
+
+### Docker (Full Stack)
+
+```bash
+export JWT_SECRET=$(openssl rand -hex 32)
+export JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+docker compose up --build
+```
+
+| Service  | URL                     |
+|----------|-------------------------|
+| Web      | http://localhost:3000    |
+| API      | http://localhost:4000    |
+| MongoDB  | localhost:27017          |
+| Redis    | localhost:6379           |
 
 ---
 
 ## Security Model
 
-### Key Exchange
-Each user generates an ECDH P-256 key pair on registration. The **public key** is stored on the server (as a JWK JSON string). The **private key never leaves the device** — it lives only in memory for the session.
+### Zero-Knowledge Properties
 
-### Message Encryption
-1. Alice fetches Bob's public key from the server.
-2. Alice derives a shared AES-GCM 256-bit key using her private key + Bob's public key (ECDH).
-3. Alice encrypts the plaintext with the derived key and a random 12-byte IV.
-4. The encrypted payload (`encryptedPayload`), IV, and a unique nonce are sent inside a `MessageEnvelope`.
-5. Server validates the nonce (Redis SET NX for replay protection) and stores only the ciphertext.
-6. Bob derives the same shared key using his private key + Alice's public key.
-7. Bob decrypts the payload locally.
+| Property | Status |
+|----------|--------|
+| Server cannot read messages | ✅ |
+| Server cannot access private keys | ✅ |
+| Server cannot forge messages | ✅ |
+| Replay attacks prevented | ✅ |
+| Per-message random IVs | ✅ |
+| Non-extractable derived keys | ✅ |
+| Session-scoped key storage | ✅ |
 
-The server sees only opaque base64 blobs. Replay attacks are prevented by per-message `nonce` fields stored in Redis.
+### Server-Side Defense Layers
 
-### Zero Knowledge
-- No plaintext messages stored
-- No private keys transmitted
-- Server cannot decrypt any message
-- Logs never contain message content
-
-### Security Guards
+```
+Request → Network Guard → Helmet → Rate Limiter → Input Guard →
+          Integrity Guard → Session Guard → JWT Auth → Route Handler
+```
 
 | Guard | Purpose |
-|---|---|
+|-------|---------|
 | Network Guard | Auto-blocks IPs after repeated violations |
-| Integrity Guard | Validates content types, rejects malformed requests |
-| Session Guard | Detects excessive per-user request rates |
-| Input Guard | Strips NUL bytes, validates via Zod schemas |
-| Socket Rate Limiter | Limits Socket.IO events per user per time window |
+| Rate Limiter | Global: 100 req/15min, Auth: 10 req/15min |
+| Input Guard | NUL byte stripping, Zod schema validation |
+| Integrity Guard | Content-Type validation, malformed rejection |
+| Session Guard | Per-user request rate detection |
+| Socket Rate Limiter | Socket.IO event throttling per user |
+
+📖 Full details: [Security Model](docs/security-model.md)
 
 ---
 
-## Setup
+## API Reference
 
-### Prerequisites
-- Node.js ≥ 18
-- MongoDB 7
-- Redis 7
-- npm ≥ 9 (workspaces support)
+### REST Endpoints
 
-### 1. Clone and install
-
-```bash
-git clone https://github.com/your-org/pm-chat.git
-cd pm-chat
-npm install
-```
-
-### 2. Environment variables
-
-```bash
-cp .env.example .env
-cp apps/server/.env.example apps/server/.env
-# Edit and set JWT_SECRET (≥ 32 chars) and database URLs
-```
-
-**Dev-safe mode:** In development, the server auto-generates a temporary JWT secret and uses default localhost database URLs if none are set.
-
-**Production mode:** All required secrets (`JWT_SECRET`, `MONGODB_URI`, `REDIS_URL`) must be explicitly set or the server will not start.
-
-### 3. Run in development
-
-```bash
-npm run dev
-```
-
-This starts both the server (port 4000) and the web app (port 3000) concurrently.
-
----
-
-## Docker
-
-Start the full stack (MongoDB, Redis, server, web) with health-checked service ordering:
-
-```bash
-export JWT_SECRET=$(openssl rand -hex 32)
-docker compose up --build
-```
-
-Services:
-- Web: http://localhost:3000
-- API: http://localhost:4000
-- MongoDB: localhost:27017
-- Redis: localhost:6379
-
-All services include health checks — the server waits for healthy MongoDB and Redis before starting, and the web app waits for a healthy server.
-
----
-
-## Deployment
-
-### Web — Vercel
-
-Set these environment variables in your Vercel project:
-
-| Variable | Description |
-|---|---|
-| `NEXT_PUBLIC_API_URL` | URL of the deployed server (e.g. `https://api.pm-chat.app`) |
-| `NEXT_PUBLIC_WS_URL` | Same as API URL (used for Socket.IO) |
-
-### Server — Render / Railway
-
-Deploy `apps/server` as a Node.js service. Required environment variables:
-
-```
-NODE_ENV=production
-PORT=4000
-MONGODB_URI=<your Atlas or managed MongoDB URI>
-REDIS_URL=<your managed Redis URL>
-JWT_SECRET=<long random string, ≥ 32 chars>
-CORS_ORIGINS=https://your-web-domain.com
-```
-
----
-
-## API Overview
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/auth/register` | Register with nickname + public key |
-| `POST` | `/api/auth/login` | Login with credentials |
-| `POST` | `/api/auth/refresh` | Refresh access token |
-| `POST` | `/api/auth/logout` | Logout and revoke tokens |
-| `GET`  | `/api/auth/me` | Get current user profile |
-| `GET`  | `/api/conversations` | List user's conversations |
-| `POST` | `/api/conversations` | Start a new conversation |
-| `GET`  | `/api/conversations/:id` | Get conversation details |
-| `DELETE` | `/api/conversations/:id` | Delete a conversation |
-| `GET`  | `/api/messages/:conversationId` | Fetch message history (paginated) |
-| `POST` | `/api/attachments` | Upload encrypted attachment |
-| `GET`  | `/api/attachments/:filename` | Download encrypted attachment |
-| `GET`  | `/health` | Health check (MongoDB + Redis status) |
-| `GET`  | `/health/detailed` | Dev-only: detailed metrics dashboard |
+| Method   | Path                           | Auth | Description |
+|----------|--------------------------------|------|-------------|
+| `POST`   | `/api/auth/register`           | No   | Register with nickname + public key |
+| `POST`   | `/api/auth/login`              | No   | Login |
+| `POST`   | `/api/auth/refresh`            | No   | Refresh access token |
+| `POST`   | `/api/auth/logout`             | Yes  | Logout and revoke tokens |
+| `GET`    | `/api/auth/me`                 | Yes  | Get current user profile |
+| `GET`    | `/api/conversations`           | Yes  | List conversations |
+| `POST`   | `/api/conversations`           | Yes  | Create conversation |
+| `GET`    | `/api/conversations/:id`       | Yes  | Get conversation details |
+| `DELETE` | `/api/conversations/:id`       | Yes  | Delete conversation |
+| `GET`    | `/api/messages/:conversationId`| Yes  | Fetch messages (paginated) |
+| `POST`   | `/api/attachments`             | Yes  | Upload encrypted attachment |
+| `GET`    | `/api/attachments/:filename`   | Yes  | Download encrypted attachment |
+| `GET`    | `/health`                      | No   | Health check |
 
 ### Socket.IO Events
 
-**Client → Server**
+**Client → Server**: `message:send`, `typing:start`, `typing:stop`, `conversation:join`, `conversation:leave`, `message:delivered`, `message:read`, `key:exchange`
 
-| Event | Payload |
-|---|---|
-| `message:send` | `{ conversationId, encryptedPayload, iv, nonce, … }` |
-| `typing:start` / `typing:stop` | `{ conversationId }` |
-| `conversation:join` / `conversation:leave` | `{ conversationId }` |
-| `message:delivered` / `message:read` | `{ messageId, conversationId }` |
-| `key:exchange` | `{ targetUserId, encryptedKey, conversationId }` |
-
-**Server → Client**
-
-| Event | Payload |
-|---|---|
-| `message:new` | `{ messageId, conversationId, senderId, encryptedPayload, iv, … }` |
-| `typing:indicator` | `{ conversationId, userId, isTyping }` |
-| `user:presence` | `{ userId, isOnline, lastSeen? }` |
-| `message:status` | `{ messageId, conversationId, status }` |
-| `key:received` | `{ fromUserId, conversationId, encryptedKey }` |
-| `error` | `{ code, message }` |
+**Server → Client**: `message:new`, `typing:indicator`, `user:presence`, `message:status`, `key:received`, `error`
 
 ---
 
-## Crypto Layer
+## Documentation
 
-All crypto lives in `apps/web/src/lib/crypto/`:
-
-| File | Responsibility |
-|---|---|
-| `keyGeneration.ts` | Generate ECDH P-256 key pair, import/export JWK |
-| `keyExchange.ts` | Derive shared AES-GCM key via ECDH |
-| `encrypt.ts` | AES-GCM 256-bit encryption with random IV |
-| `decrypt.ts` | AES-GCM 256-bit decryption |
-| `keyStorage.ts` | Secure in-memory private key storage (sessionStorage) |
-| `messagePackaging.ts` | Pack/unpack wire-format `MessageEnvelope` with nonce |
-
-Shared types for the envelope format live in `packages/shared/src/types/message.ts`.
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/architecture.md) | System design, module layout, data flows |
+| [Security Model](docs/security-model.md) | Threat model, encryption details, defense layers |
+| [Message Lifecycle](docs/message-lifecycle.md) | End-to-end message flow from send to receive |
+| [Packet Format](docs/packet-format.md) | Wire protocol and MessageEnvelope schema |
+| [Pairing Flow](docs/pairing-flow.md) | How users establish encrypted channels |
+| [Deployment Guide](docs/deployment.md) | Dev, Docker, and production setup |
+| [Examples](docs/examples.md) | Code examples for common operations |
 
 ---
 
-## What's Done
+## Project Structure
 
-- [x] Anonymous registration (nickname + ECDH public key)
-- [x] JWT access + refresh token auth with rotation
-- [x] ECDH P-256 key generation and exchange
-- [x] AES-GCM 256 message encryption/decryption
-- [x] Socket.IO real-time messaging with rate limiting
-- [x] Typing indicators and online presence
-- [x] Message delivery & read receipts
-- [x] Burn-after-reading messages
-- [x] Self-destructing conversations with TTL
-- [x] Conversation management (create, list, delete)
-- [x] File attachment support (encrypted upload/download)
-- [x] Security guards (network, integrity, session, input)
-- [x] Security monitor with auto-defense
-- [x] Rate limiting (REST global + auth + Socket.IO events)
-- [x] Dev-safe mode (auto-generated secrets, strict production mode)
-- [x] Security mode indicator (DEV/PRODUCTION) in UI
-- [x] Connection status indicator (online/offline/reconnecting)
-- [x] Message reactions (UI component)
-- [x] Quick search (client-side over decrypted messages)
-- [x] Dark mode
-- [x] Virtual scrolling for large message lists
-- [x] Optimistic UI with skeleton loading
-- [x] Crypto unit tests (15 passing)
-- [x] Docker Compose with health checks
-- [x] Vercel + separate backend deployment config
-- [x] Shared TypeScript types (`@pm-chat/shared`)
+```
+apps/server/src/
+├── config.ts             ← Environment configuration
+├── db.ts                 ← MongoDB connection
+├── redis.ts              ← Redis connection
+├── index.ts              ← Server bootstrap + shutdown
+├── models/               ← User, Message, Conversation schemas
+├── routes/               ← REST API (auth, conversations, messages, attachments, health)
+├── socket/               ← Real-time handlers (messages, presence, typing)
+├── middleware/            ← Auth, rate limiting, security guards
+└── utils/                ← JWT, logging, security monitor
 
-## What's Next
+apps/web/src/
+├── app/                  ← Next.js pages and layouts
+├── components/           ← React components (auth, chat, layout, ui)
+├── hooks/                ← Custom hooks (crypto, socket, messages, presence)
+├── lib/
+│   ├── crypto/           ← E2EE layer (ECDH + AES-GCM) — isolated from UI
+│   ├── store/            ← Zustand state management
+│   ├── api.ts            ← REST client
+│   └── socket.ts         ← Socket.IO client
+├── workers/              ← Web workers
+└── __tests__/            ← Jest crypto tests
 
-- [ ] Per-message forward secrecy (ratchet protocol)
-- [ ] Multi-device key sync (secure key re-derivation)
+packages/shared/src/
+├── types/                ← Shared TypeScript interfaces
+└── validators/           ← Zod validation schemas
+```
+
+---
+
+## Build & Test
+
+```bash
+# Build all (shared → server → web)
+npm run build
+
+# Run tests
+npm run test
+
+# Lint
+npm run lint
+
+# Type check
+npm run type-check --workspace=apps/web
+```
+
+---
+
+## Roadmap
+
+### ✅ Completed
+
+- End-to-end encryption (ECDH P-256 + AES-GCM 256)
+- Anonymous registration and JWT auth
+- Real-time messaging with Socket.IO
+- Burn-after-reading and self-destructing conversations
+- Delivery and read receipts
+- Encrypted file attachments
+- Security guards and auto-defense
+- Rate limiting (REST + Socket.IO)
+- Docker Compose with health checks
+- Crypto unit tests (15 passing)
+- CI pipeline (lint, build, test)
+
+### 🔜 Planned
+
+- [ ] Per-message forward secrecy (Double Ratchet protocol)
+- [ ] Multi-device key synchronization
 - [ ] Group conversations
 - [ ] Push notifications
-- [ ] E2E integration tests
+- [ ] Key fingerprint verification (anti-MITM)
+- [ ] End-to-end integration tests
 - [ ] Mobile app (React Native)
+- [ ] Onion routing for metadata protection
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for our security policy and responsible disclosure process.
+
+## License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
