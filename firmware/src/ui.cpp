@@ -83,8 +83,7 @@ static void draw_header(const char *title) {
     /* Battery indicator (top-right) */
     uint8_t bp = battery::percent();
     char bat[6];
-    if (bp > 99) { bat[0]='1'; bat[1]='0'; bat[2]='0'; bat[3]='%'; bat[4]=0; }
-    else { bat[0] = '0' + bp / 10; bat[1] = '0' + bp % 10; bat[2] = '%'; bat[3] = 0; }
+    snprintf(bat, sizeof(bat), "%d%%", bp);
     uint8_t bw = s_disp.getStrWidth(bat);
     s_disp.drawStr(SCREEN_W - bw - 2, 10, bat);
 

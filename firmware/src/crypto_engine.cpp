@@ -39,11 +39,14 @@ void crypto::random_bytes(uint8_t *buf, uint16_t len) {
         return;
     }
 #endif
-    /* Fallback: use millis/micros entropy (less secure but functional) */
+    /* Fallback: NOT cryptographically secure. Hardware RNG should always
+     * be available on STM32WLE5. If we reach this path, the device is
+     * in a degraded state and should not be used for key generation. */
     for (uint16_t i = 0; i < len; i++) {
         buf[i] = (uint8_t)(micros() ^ (analogRead(PB3) & 0xFF) ^ (i * 37));
         delayMicroseconds(1);
     }
+    Serial.println(F("[CRYPTO] WARNING: Using fallback RNG — not secure!"));
 }
 
 uint32_t crypto::random_u32() {
