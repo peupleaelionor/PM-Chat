@@ -1,0 +1,2 @@
+This directory is for project-specific (private) libraries.
+All external dependencies are managed via platformio.ini lib_deps.
