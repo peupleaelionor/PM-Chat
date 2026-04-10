@@ -24,12 +24,12 @@ function StatusIcon({ message }: { message: LocalMessage }) {
     return <span className="text-text-muted">●</span>;
   }
   if (message.read) {
-    return <span className="text-accent-secondary text-xs" title="Read">✓✓</span>;
+    return <span className="text-accent-secondary text-xs" title="Lu">✓✓</span>;
   }
   if (message.delivered) {
-    return <span className="text-text-secondary text-xs" title="Delivered">✓✓</span>;
+    return <span className="text-text-secondary text-xs" title="Distribué">✓✓</span>;
   }
-  return <span className="text-text-muted text-xs" title="Sent">✓</span>;
+  return <span className="text-text-muted text-xs" title="Envoyé">✓</span>;
 }
 
 export const MessageBubble = memo(function MessageBubble({
@@ -38,7 +38,7 @@ export const MessageBubble = memo(function MessageBubble({
   onReact,
   currentUserId,
 }: MessageBubbleProps) {
-  const displayText = message.plaintext ?? '🔒 Encrypted';
+  const displayText = message.plaintext ?? '🔒 Chiffré';
   const isDecrypting = !message.plaintext && !message.optimistic;
   const messageId = message._id ?? message.localId ?? '';
 
@@ -76,13 +76,13 @@ export const MessageBubble = memo(function MessageBubble({
         >
           {/* Burn-after-reading indicator */}
           {message.burnAfterReading && (
-            <span className="mr-1" title="Burns after reading" aria-label="Burn after reading">
+            <span className="mr-1" title="Autodestruction après lecture" aria-label="Autodestruction après lecture">
               🔥
             </span>
           )}
 
           <span className={cn(isDecrypting && 'text-text-muted italic')}>
-            {isDecrypting ? 'Decrypting…' : displayText}
+            {isDecrypting ? 'Déchiffrement…' : displayText}
           </span>
 
           {/* Expiry timer */}

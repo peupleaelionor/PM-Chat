@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'PM-Chat – Secure Private Messaging',
-  description: 'End-to-end encrypted private messaging',
+  title: 'PM-Chat – Messagerie privée sécurisée',
+  description: 'Messagerie privée chiffrée de bout en bout',
 };
 
 export const viewport: Viewport = {
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="fr" className="dark">
       <body className="bg-bg-primary text-text-primary antialiased">
         <Providers>{children}</Providers>
       </body>

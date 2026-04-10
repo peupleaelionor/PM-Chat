@@ -181,17 +181,17 @@ export function ChatWindow({ conversation }: ChatWindowProps) {
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-text-primary truncate">{peer.nickname}</p>
           <p className="text-xs text-text-secondary">
-            {isOnline ? 'Online' : 'Offline'}
+            {isOnline ? 'En ligne' : 'Hors ligne'}
           </p>
         </div>
-        <div className="flex items-center gap-1 text-xs text-accent-secondary" title="End-to-end encrypted">
+        <div className="flex items-center gap-1 text-xs text-accent-secondary" title="Chiffré de bout en bout">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
             <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
           </svg>
           <span>E2EE</span>
         </div>
         {conversation.selfDestruct && (
-          <span className="text-xs text-accent-danger" title="Self-destructing conversation">💣</span>
+          <span className="text-xs text-accent-danger" title="Conversation autodestructrice">💣</span>
         )}
       </div>
 

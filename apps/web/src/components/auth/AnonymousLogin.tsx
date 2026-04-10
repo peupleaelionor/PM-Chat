@@ -117,7 +117,7 @@ export function AnonymousLogin({ children }: { children: React.ReactNode }) {
 
         setStatus('ready');
       } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : 'Initialization failed');
+        setErrorMsg(err instanceof Error ? err.message : 'Échec de l\'initialisation');
         setStatus('error');
       }
     }
@@ -131,7 +131,7 @@ export function AnonymousLogin({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen items-center justify-center bg-bg-primary">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent-primary border-t-transparent" />
-          <p className="text-text-secondary text-sm">Initializing secure session…</p>
+          <p className="text-text-secondary text-sm">Initialisation de la session sécurisée…</p>
         </div>
       </div>
     );
@@ -142,13 +142,13 @@ export function AnonymousLogin({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen items-center justify-center bg-bg-primary">
         <div className="flex flex-col items-center gap-4 text-center px-6">
           <div className="text-4xl">⚠️</div>
-          <p className="text-text-primary font-semibold">Connection Error</p>
+          <p className="text-text-primary font-semibold">Erreur de connexion</p>
           <p className="text-text-secondary text-sm">{errorMsg}</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-2 rounded-lg bg-accent-primary px-4 py-2 text-sm text-white hover:bg-purple-500"
           >
-            Retry
+            Réessayer
           </button>
         </div>
       </div>

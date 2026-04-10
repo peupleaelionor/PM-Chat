@@ -78,7 +78,7 @@ export function MessageInput({
       {burnAfterReading && (
         <div className="mb-2 flex items-center gap-1 text-xs text-accent-danger">
           <span>🔥</span>
-          <span>Burn-after-reading enabled</span>
+          <span>Autodestruction après lecture activée</span>
         </div>
       )}
 
@@ -92,8 +92,8 @@ export function MessageInput({
             'flex-shrink-0',
             burnAfterReading && 'text-accent-danger'
           )}
-          title="Toggle burn-after-reading"
-          aria-label="Toggle burn after reading"
+          title="Activer/désactiver l'autodestruction après lecture"
+          aria-label="Activer ou désactiver l'autodestruction après lecture"
         >
           🔥
         </Button>
@@ -105,8 +105,8 @@ export function MessageInput({
             size="icon"
             onClick={() => setShowEmoji((s) => !s)}
             className="flex-shrink-0"
-            title="Emoji"
-            aria-label="Open emoji picker"
+            title="Émoji"
+            aria-label="Ouvrir le sélecteur d'émojis"
           >
             😊
           </Button>
@@ -117,7 +117,7 @@ export function MessageInput({
                   key={emoji}
                   onClick={() => insertEmoji(emoji)}
                   className="text-xl hover:scale-125 transition-transform p-1"
-                  aria-label={`Insert ${emoji}`}
+                  aria-label={`Insérer ${emoji}`}
                 >
                   {emoji}
                 </button>
@@ -131,7 +131,7 @@ export function MessageInput({
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message…"
+          placeholder="Écrivez un message…"
           rows={1}
           disabled={disabled}
           className={cn(
@@ -155,7 +155,7 @@ export function MessageInput({
           onClick={handleSend}
           disabled={!text.trim() || disabled}
           className="flex-shrink-0"
-          aria-label="Send message"
+          aria-label="Envoyer un message"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

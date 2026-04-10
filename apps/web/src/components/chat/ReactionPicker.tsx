@@ -31,8 +31,8 @@ export function ReactionPicker({ onReact, className }: ReactionPickerProps) {
       <button
         onClick={() => setIsOpen((o) => !o)}
         className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-text-secondary text-xs p-1 rounded"
-        aria-label="Add reaction"
-        title="React"
+        aria-label="Ajouter une réaction"
+        title="Réagir"
       >
         😊
       </button>
@@ -47,7 +47,7 @@ export function ReactionPicker({ onReact, className }: ReactionPickerProps) {
                 setIsOpen(false);
               }}
               className="text-lg hover:scale-125 transition-transform p-1 rounded hover:bg-bg-tertiary"
-              aria-label={`React with ${emoji}`}
+              aria-label={`Réagir avec ${emoji}`}
             >
               {emoji}
             </button>
@@ -82,7 +82,7 @@ export function ReactionDisplay({ reactions, currentUserId, onToggle }: Reaction
                 ? 'bg-accent-primary/20 border border-accent-primary/40 text-text-primary'
                 : 'bg-bg-tertiary border border-bg-tertiary text-text-secondary hover:border-text-muted'
             )}
-            title={`${users.length} reaction${users.length > 1 ? 's' : ''}`}
+            title={`${users.length} réaction${users.length > 1 ? 's' : ''}`}
           >
             <span>{emoji}</span>
             <span className="text-[10px]">{users.length}</span>

@@ -29,12 +29,12 @@ export default function HomePage() {
           </svg>
         </div>
         <h1 className="text-3xl font-bold text-text-primary">PM-Chat</h1>
-        <p className="text-text-secondary">End-to-end encrypted private messaging</p>
+        <p className="text-text-secondary">Messagerie privée chiffrée de bout en bout</p>
       </div>
 
       <div className="w-full max-w-sm space-y-4">
         <div className="rounded-2xl bg-bg-secondary p-6 space-y-4">
-          <p className="text-xs text-text-muted uppercase tracking-widest">Your Anonymous Account</p>
+          <p className="text-xs text-text-muted uppercase tracking-widest">Votre compte anonyme</p>
 
           {nickname && (
             <div className="flex flex-col items-center gap-2">
@@ -44,11 +44,11 @@ export default function HomePage() {
           )}
 
           <div className="rounded-lg bg-bg-tertiary p-3 break-all text-xs text-text-secondary font-mono">
-            {userId ?? 'Generating…'}
+            {userId ?? 'Génération…'}
           </div>
 
           <Button variant="ghost" size="sm" onClick={copyId} className="w-full">
-            📋 Copy Invite ID
+            📋 Copier l&apos;ID d&apos;invitation
           </Button>
         </div>
 
@@ -59,11 +59,11 @@ export default function HomePage() {
           className="w-full"
           disabled={!isAuthenticated}
         >
-          Open Chat →
+          Ouvrir le chat →
         </Button>
 
         <p className="text-xs text-text-muted">
-          🔒 Your messages are encrypted on your device. We never see your content.
+          🔒 Vos messages sont chiffrés sur votre appareil. Nous ne voyons jamais votre contenu.
         </p>
       </div>
     </main>

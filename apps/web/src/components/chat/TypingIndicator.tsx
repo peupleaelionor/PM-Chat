@@ -3,10 +3,10 @@ export function TypingIndicator({ names }: { names: string[] }) {
 
   const label =
     names.length === 1
-      ? `${names[0]} is typing`
+      ? `${names[0]} est en train d'écrire`
       : names.length === 2
-      ? `${names[0]} and ${names[1]} are typing`
-      : 'Several people are typing';
+      ? `${names[0]} et ${names[1]} sont en train d'écrire`
+      : 'Plusieurs personnes écrivent';
 
   return (
     <div className="flex items-center gap-2 px-4 py-1 text-xs text-text-secondary animate-fade-in">
