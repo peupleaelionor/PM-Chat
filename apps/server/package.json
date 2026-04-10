@@ -1,7 +1,7 @@
 {
   "name": "@pm-chat/server",
   "version": "1.0.0",
-  "description": "PM-Chat secure private messaging backend",
+  "description": "PM-Chat — backend de messagerie privée sécurisée",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
