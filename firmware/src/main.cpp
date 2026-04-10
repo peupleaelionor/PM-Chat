@@ -50,7 +50,7 @@ void setup() {
     Serial.setTx(PIN_UART_TX);
     Serial.setRx(PIN_UART_RX);
     Serial.begin(115200);
-    Serial.println(F("\n[PM-Chat] Booting..."));
+    Serial.println(F("\n[PM-Chat] Démarrage..."));
 
     /* Initialise subsystems */
     led_init();
@@ -65,7 +65,7 @@ void setup() {
 
     /* Initialise LoRa radio */
     if (!radio::init()) {
-        Serial.println(F("[PM-Chat] Radio init FAILED!"));
+        Serial.println(F("[PM-Chat] Initialisation radio ÉCHOUÉE !"));
         fsm::on_error("Radio init failed");
     } else {
         Serial.println(F("[PM-Chat] Radio OK"));
@@ -77,7 +77,7 @@ void setup() {
     /* Start watchdog (8 seconds) */
     IWatchdog.begin(WDG_TIMEOUT_US);
 
-    Serial.println(F("[PM-Chat] Boot complete"));
+    Serial.println(F("[PM-Chat] Démarrage terminé"));
     s_last_ui_draw = millis();
     s_last_batt    = millis();
 }
@@ -93,7 +93,7 @@ void loop() {
 
     /* ── 2. Handle panic wipe (all buttons held) ── */
     if (evt == BTN_PANIC) {
-        Serial.println(F("[PM-Chat] PANIC WIPE!"));
+        Serial.println(F("[PM-Chat] EFFACEMENT D'URGENCE !"));
         fsm::panic_wipe();
         evt = BTN_NONE;
     }
@@ -119,10 +119,10 @@ void loop() {
         battery::update();
 
         if (battery::is_critical()) {
-            ui::toast("BATT CRITICAL!", 3000);
+            ui::toast("BATT CRITIQUE !", 3000);
             ui::wake();
         } else if (battery::is_low()) {
-            ui::toast("Battery low", 2000);
+            ui::toast("Batterie faible", 2000);
         }
     }
 

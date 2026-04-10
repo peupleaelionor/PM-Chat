@@ -46,7 +46,7 @@ void crypto::random_bytes(uint8_t *buf, uint16_t len) {
         buf[i] = (uint8_t)(micros() ^ (analogRead(PB3) & 0xFF) ^ (i * 37));
         delayMicroseconds(1);
     }
-    Serial.println(F("[CRYPTO] WARNING: Using fallback RNG — not secure!"));
+    Serial.println(F("[CRYPTO] ATTENTION : Utilisation du RNG de secours — non sécurisé !"));
 }
 
 uint32_t crypto::random_u32() {
