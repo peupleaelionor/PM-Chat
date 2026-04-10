@@ -23,7 +23,7 @@ export async function authMiddleware(
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or malformed Authorization header" });
+    res.status(401).json({ error: "En-tête d'autorisation manquant ou malformé" });
     return;
   }
 
@@ -33,13 +33,13 @@ export async function authMiddleware(
     const payload = verifyToken(token);
 
     if (payload.type !== "access") {
-      res.status(401).json({ error: "Invalid token type" });
+      res.status(401).json({ error: "Type de token invalide" });
       return;
     }
 
     // Check against the Redis blacklist (handles logout/revocation)
     if (await isTokenBlacklisted(payload.jti)) {
-      res.status(401).json({ error: "Token has been revoked" });
+      res.status(401).json({ error: "Le token a été révoqué" });
       return;
     }
 
@@ -48,6 +48,6 @@ export async function authMiddleware(
     next();
   } catch (err) {
     logger.debug("Auth middleware rejected token", { err });
-    res.status(401).json({ error: "Invalid or expired token" });
+    res.status(401).json({ error: "Token invalide ou expiré" });
   }
 }

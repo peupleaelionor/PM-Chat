@@ -16,7 +16,7 @@ export function validate(schema: AnyZodObject) {
     } catch (err) {
       if (err instanceof ZodError) {
         res.status(400).json({
-          error: "Validation failed",
+          error: "Échec de la validation",
           details: err.flatten().fieldErrors,
         });
         return;

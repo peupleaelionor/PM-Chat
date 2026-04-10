@@ -79,7 +79,7 @@ router.post(
       // Verify all participants exist
       const existingCount = await User.countDocuments({ _id: { $in: objectIds } });
       if (existingCount !== objectIds.length) {
-        next(createError("One or more participants not found", 404));
+        next(createError("Un ou plusieurs participants introuvables", 404));
         return;
       }
 
@@ -114,7 +114,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction): Prom
     }).populate("participants", "nickname publicKey");
 
     if (!conversation) {
-      next(createError("Conversation not found", 404));
+      next(createError("Conversation introuvable", 404));
       return;
     }
 
@@ -136,7 +136,7 @@ router.delete("/:id", async (req: Request, res: Response, next: NextFunction): P
     });
 
     if (!conversation) {
-      next(createError("Conversation not found", 404));
+      next(createError("Conversation introuvable", 404));
       return;
     }
 
@@ -145,7 +145,7 @@ router.delete("/:id", async (req: Request, res: Response, next: NextFunction): P
       conversation.deleteOne(),
     ]);
 
-    res.json({ message: "Conversation deleted" });
+    res.json({ message: "Conversation supprimée" });
   } catch (err) {
     next(err);
   }

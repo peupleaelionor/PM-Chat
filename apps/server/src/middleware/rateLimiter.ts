@@ -11,7 +11,7 @@ export const globalRateLimiter = rateLimit({
   max: config.RATE_LIMIT_MAX_REQUESTS,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many requests, please slow down." },
+  message: { error: "Trop de requêtes, veuillez ralentir." },
   skip: (req: Request) => req.path === "/health",
 });
 
@@ -24,8 +24,8 @@ export const authRateLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many authentication attempts, please try again later." },
+  message: { error: "Trop de tentatives d'authentification, veuillez réessayer plus tard." },
   handler: (_req: Request, res: Response) => {
-    res.status(429).json({ error: "Too many authentication attempts, please try again later." });
+    res.status(429).json({ error: "Trop de tentatives d'authentification, veuillez réessayer plus tard." });
   },
 });

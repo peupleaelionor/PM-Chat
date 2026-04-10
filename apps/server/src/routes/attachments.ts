@@ -32,7 +32,7 @@ function fileFilter(
   ) {
     cb(null, true);
   } else {
-    cb(createError("Only encrypted binary blobs are accepted (application/octet-stream)", 415));
+    cb(createError("Seuls les blobs binaires chiffrés sont acceptés (application/octet-stream)", 415));
   }
 }
 
@@ -56,7 +56,7 @@ router.post(
   (req: Request, res: Response, next: NextFunction): void => {
     try {
       if (!req.file) {
-        next(createError("No file provided", 400));
+        next(createError("Aucun fichier fourni", 400));
         return;
       }
 
@@ -88,7 +88,7 @@ router.get("/:filename", (req: Request, res: Response, next: NextFunction): void
     const filename = path.basename(req.params["filename"] ?? "");
 
     if (!filename.endsWith(".enc") || filename.includes("..")) {
-      next(createError("Invalid filename", 400));
+      next(createError("Nom de fichier invalide", 400));
       return;
     }
 
@@ -96,7 +96,7 @@ router.get("/:filename", (req: Request, res: Response, next: NextFunction): void
 
     res.setHeader("Content-Type", "application/octet-stream");
     res.sendFile(filePath, (err) => {
-      if (err) next(createError("Attachment not found", 404));
+      if (err) next(createError("Pièce jointe introuvable", 404));
     });
   } catch (err) {
     next(err);

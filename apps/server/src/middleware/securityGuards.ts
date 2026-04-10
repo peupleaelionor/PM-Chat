@@ -10,7 +10,7 @@ export function networkGuard(req: Request, res: Response, next: NextFunction): v
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
   if (isIPBlocked(ip)) {
     logger.debug("Blocked request from auto-blocked IP", { ip });
-    res.status(403).json({ error: "Forbidden" });
+    res.status(403).json({ error: "Interdit" });
     return;
   }
   next();
@@ -35,7 +35,7 @@ export function cryptoGuard(req: Request, res: Response, next: NextFunction): vo
       const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
       recordMalformedPayload(ip);
       trackError("crypto", "Message with invalid encrypted payload rejected");
-      res.status(400).json({ error: "Invalid encrypted payload" });
+      res.status(400).json({ error: "Charge chiffrée invalide" });
       return;
     }
 
@@ -44,7 +44,7 @@ export function cryptoGuard(req: Request, res: Response, next: NextFunction): vo
       const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
       recordMalformedPayload(ip);
       trackError("crypto", "Message missing or invalid IV");
-      res.status(400).json({ error: "Invalid encryption IV" });
+      res.status(400).json({ error: "IV de chiffrement invalide" });
       return;
     }
   }
@@ -69,7 +69,7 @@ export function integrityGuard(req: Request, res: Response, next: NextFunction):
     ) {
       const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
       recordMalformedPayload(ip);
-      res.status(415).json({ error: "Unsupported content type" });
+      res.status(415).json({ error: "Type de contenu non supporté" });
       return;
     }
   }
@@ -103,7 +103,7 @@ export function sessionGuard(req: Request, res: Response, next: NextFunction): v
     if (entry.count > SESSION_MAX_REQUESTS) {
       logger.warn("Session anomaly detected: excessive requests", { userId, count: entry.count });
       trackError("auth", `Session anomaly for user ${userId.substring(0, 8)}...`);
-      res.status(429).json({ error: "Too many requests from this session" });
+      res.status(429).json({ error: "Trop de requêtes depuis cette session" });
       return;
     }
   }
