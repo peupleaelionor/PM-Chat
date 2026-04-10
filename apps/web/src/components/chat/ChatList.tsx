@@ -62,7 +62,7 @@ function ConversationItem({
         </div>
         <div className="flex items-center justify-between mt-0.5">
           <span className="text-xs text-text-secondary truncate">
-            {conversation.selfDestruct ? '💣 Self-destruct' : '🔒 Encrypted'}
+            {conversation.selfDestruct ? '💣 Autodestruction' : '🔒 Chiffré'}
           </span>
           {unread > 0 && (
             <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-primary px-1 text-[10px] font-bold text-white">
@@ -114,9 +114,9 @@ export function ChatList({ activeConversationId }: { activeConversationId?: stri
       {!isLoading && conversations.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center px-6">
           <div className="text-4xl mb-3">💬</div>
-          <p className="text-text-secondary text-sm">No conversations yet.</p>
+          <p className="text-text-secondary text-sm">Aucune conversation.</p>
           <p className="text-text-muted text-xs mt-1">
-            Share your ID with someone to start chatting.
+            Partagez votre ID avec quelqu&apos;un pour commencer à discuter.
           </p>
         </div>
       )}

@@ -1,6 +1,6 @@
-# 🔒 PM-Chat — Zero-Knowledge Encrypted Messaging
+# 🔒 PM-Chat — Messagerie Chiffrée à Connaissance Nulle
 
-> **Private. Anonymous. End-to-end encrypted. The server never sees your messages.**
+> **Privé. Anonyme. Chiffré de bout en bout. Le serveur ne voit jamais vos messages.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933)](https://nodejs.org)
@@ -8,22 +8,22 @@
 
 ---
 
-## What is PM-Chat?
+## Qu'est-ce que PM-Chat ?
 
-PM-Chat is an open-source, anonymous, end-to-end encrypted messaging platform. Users register with only a nickname — **no email, no phone number, no password**. All messages are encrypted in the browser using ECDH key exchange and AES-GCM 256-bit encryption before they leave your device. The server stores only ciphertext it cannot read.
+PM-Chat est une plateforme de messagerie open-source, anonyme et chiffrée de bout en bout. Les utilisateurs s'inscrivent avec un simple pseudonyme — **pas d'e-mail, pas de numéro de téléphone, pas de mot de passe**. Tous les messages sont chiffrés dans le navigateur via l'échange de clés ECDH et le chiffrement AES-GCM 256 bits avant de quitter votre appareil. Le serveur ne stocke que du texte chiffré qu'il ne peut pas lire.
 
-### Key Features
+### Fonctionnalités clés
 
-| Feature | Description |
+| Fonctionnalité | Description |
 |---------|-------------|
-| 🔐 **End-to-End Encryption** | ECDH P-256 key exchange + AES-GCM 256-bit — messages encrypted/decrypted entirely in the browser |
-| 👻 **Zero-Knowledge Server** | Server stores only opaque ciphertext — cannot decrypt any message |
-| 🎭 **Anonymous** | No PII required — register with a nickname only |
-| 💨 **Ephemeral** | Burn-after-reading messages and self-destructing conversations |
-| ⚡ **Real-Time** | Socket.IO-powered presence, typing indicators, and delivery receipts |
-| 🛡️ **Defense-in-Depth** | Rate limiting, security guards, auto-blocking, input sanitization |
-| 🔄 **Replay Protection** | Per-message nonces validated via Redis SET NX |
-| 📎 **Encrypted Attachments** | File uploads encrypted client-side before transmission |
+| 🔐 **Chiffrement de bout en bout** | Échange de clés ECDH P-256 + AES-GCM 256 bits — messages chiffrés/déchiffrés entièrement dans le navigateur |
+| 👻 **Serveur Zero-Knowledge** | Le serveur ne stocke que du texte chiffré opaque — ne peut déchiffrer aucun message |
+| 🎭 **Anonyme** | Aucune donnée personnelle requise — inscription avec un pseudonyme uniquement |
+| 💨 **Éphémère** | Messages à lecture unique et conversations autodestructibles |
+| ⚡ **Temps réel** | Présence, indicateurs de saisie et accusés de réception propulsés par Socket.IO |
+| 🛡️ **Défense en profondeur** | Limitation de débit, gardes de sécurité, blocage automatique, assainissement des entrées |
+| 🔄 **Protection anti-rejeu** | Nonces par message validés via Redis SET NX |
+| 📎 **Pièces jointes chiffrées** | Fichiers chiffrés côté client avant transmission |
 
 ---
 
@@ -36,10 +36,10 @@ pm-chat/
 │   └── web/               ← Next.js 15 + Tailwind CSS + Web Crypto API
 ├── packages/
 │   └── shared/            ← TypeScript types + Zod validators
-└── docs/                  ← Architecture, security, protocol documentation
+└── docs/                  ← Architecture, sécurité, documentation du protocole
 ```
 
-### How Encryption Works
+### Comment fonctionne le chiffrement
 
 ```
   Alice                          Server                         Bob
@@ -68,45 +68,45 @@ pm-chat/
     └──────────────────────────────┴──────────────────────────────┘
 ```
 
-### Tech Stack
+### Stack technique
 
-| Layer      | Technology |
+| Couche     | Technologie |
 |------------|------------|
 | Frontend   | Next.js 15, React 18, Tailwind CSS, Zustand, TanStack Query |
 | Backend    | Node.js, Express, Socket.IO, MongoDB (Mongoose), Redis (ioredis) |
 | Crypto     | Web Crypto API — ECDH P-256 + AES-GCM 256 |
-| Auth       | JWT (access + refresh tokens), anonymous registration |
-| Validation | Zod schemas (shared between client & server) |
-| Security   | Helmet, rate limiting, security guards, auto-defense, CSP |
+| Auth       | JWT (tokens d'accès + de rafraîchissement), inscription anonyme |
+| Validation | Schémas Zod (partagés entre client et serveur) |
+| Sécurité   | Helmet, limitation de débit, gardes de sécurité, défense automatique, CSP |
 
 ---
 
-## Quick Start
+## Démarrage rapide
 
-### Prerequisites
+### Prérequis
 
 - Node.js ≥ 18, npm ≥ 9
-- MongoDB 7, Redis 7 (or use Docker)
+- MongoDB 7, Redis 7 (ou utiliser Docker)
 
-### Development
+### Développement
 
 ```bash
 git clone https://github.com/peupleaelionor/PM-Chat.git
 cd PM-Chat
 npm install
 
-# Copy environment files
+# Copier les fichiers d'environnement
 cp .env.example .env
 cp apps/server/.env.example apps/server/.env
 
-# Start databases (Docker)
+# Démarrer les bases de données (Docker)
 docker compose up mongodb redis -d
 
-# Start dev servers (server:4000 + web:3000)
+# Démarrer les serveurs de développement (server:4000 + web:3000)
 npm run dev
 ```
 
-> **Dev-safe mode**: In development, the server auto-generates temporary secrets and uses localhost defaults. No configuration required.
+> **Mode dev-safe** : En développement, le serveur génère automatiquement des secrets temporaires et utilise les paramètres localhost par défaut. Aucune configuration requise.
 
 ### Docker (Full Stack)
 
@@ -125,65 +125,65 @@ docker compose up --build
 
 ---
 
-## Security Model
+## Modèle de sécurité
 
-### Zero-Knowledge Properties
+### Propriétés Zero-Knowledge
 
-| Property | Status |
+| Propriété | Statut |
 |----------|--------|
-| Server cannot read messages | ✅ |
-| Server cannot access private keys | ✅ |
-| Server cannot forge messages | ✅ |
-| Replay attacks prevented | ✅ |
-| Per-message random IVs | ✅ |
-| Non-extractable derived keys | ✅ |
-| Session-scoped key storage | ✅ |
+| Le serveur ne peut pas lire les messages | ✅ |
+| Le serveur ne peut pas accéder aux clés privées | ✅ |
+| Le serveur ne peut pas falsifier les messages | ✅ |
+| Attaques par rejeu empêchées | ✅ |
+| IV aléatoires par message | ✅ |
+| Clés dérivées non extractibles | ✅ |
+| Stockage des clés limité à la session | ✅ |
 
-### Server-Side Defense Layers
+### Couches de défense côté serveur
 
 ```
 Request → Network Guard → Helmet → Rate Limiter → Input Guard →
           Integrity Guard → Session Guard → JWT Auth → Route Handler
 ```
 
-| Guard | Purpose |
+| Garde | Fonction |
 |-------|---------|
-| Network Guard | Auto-blocks IPs after repeated violations |
-| Rate Limiter | Global: 100 req/15min, Auth: 10 req/15min |
-| Input Guard | NUL byte stripping, Zod schema validation |
-| Integrity Guard | Content-Type validation, malformed rejection |
-| Session Guard | Per-user request rate detection |
-| Socket Rate Limiter | Socket.IO event throttling per user |
+| Network Guard | Bloque automatiquement les IP après des violations répétées |
+| Rate Limiter | Global : 100 req/15min, Auth : 10 req/15min |
+| Input Guard | Suppression des octets NUL, validation de schéma Zod |
+| Integrity Guard | Validation du Content-Type, rejet des requêtes malformées |
+| Session Guard | Détection du taux de requêtes par utilisateur |
+| Socket Rate Limiter | Limitation des événements Socket.IO par utilisateur |
 
-📖 Full details: [Security Model](docs/security-model.md)
+📖 Détails complets : [Modèle de sécurité](docs/security-model.md)
 
 ---
 
-## API Reference
+## Référence API
 
-### REST Endpoints
+### Points d'accès REST
 
-| Method   | Path                           | Auth | Description |
+| Méthode  | Chemin                         | Auth | Description |
 |----------|--------------------------------|------|-------------|
-| `POST`   | `/api/auth/register`           | No   | Register with nickname + public key |
-| `POST`   | `/api/auth/login`              | No   | Login |
-| `POST`   | `/api/auth/refresh`            | No   | Refresh access token |
-| `POST`   | `/api/auth/logout`             | Yes  | Logout and revoke tokens |
-| `GET`    | `/api/auth/me`                 | Yes  | Get current user profile |
-| `GET`    | `/api/conversations`           | Yes  | List conversations |
-| `POST`   | `/api/conversations`           | Yes  | Create conversation |
-| `GET`    | `/api/conversations/:id`       | Yes  | Get conversation details |
-| `DELETE` | `/api/conversations/:id`       | Yes  | Delete conversation |
-| `GET`    | `/api/messages/:conversationId`| Yes  | Fetch messages (paginated) |
-| `POST`   | `/api/attachments`             | Yes  | Upload encrypted attachment |
-| `GET`    | `/api/attachments/:filename`   | Yes  | Download encrypted attachment |
-| `GET`    | `/health`                      | No   | Health check |
+| `POST`   | `/api/auth/register`           | Non  | Inscription avec pseudonyme + clé publique |
+| `POST`   | `/api/auth/login`              | Non  | Connexion |
+| `POST`   | `/api/auth/refresh`            | Non  | Rafraîchir le token d'accès |
+| `POST`   | `/api/auth/logout`             | Oui  | Déconnexion et révocation des tokens |
+| `GET`    | `/api/auth/me`                 | Oui  | Obtenir le profil de l'utilisateur actuel |
+| `GET`    | `/api/conversations`           | Oui  | Lister les conversations |
+| `POST`   | `/api/conversations`           | Oui  | Créer une conversation |
+| `GET`    | `/api/conversations/:id`       | Oui  | Obtenir les détails d'une conversation |
+| `DELETE` | `/api/conversations/:id`       | Oui  | Supprimer une conversation |
+| `GET`    | `/api/messages/:conversationId`| Oui  | Récupérer les messages (paginés) |
+| `POST`   | `/api/attachments`             | Oui  | Téléverser une pièce jointe chiffrée |
+| `GET`    | `/api/attachments/:filename`   | Oui  | Télécharger une pièce jointe chiffrée |
+| `GET`    | `/health`                      | Non  | Vérification de l'état de santé |
 
-### Socket.IO Events
+### Événements Socket.IO
 
-**Client → Server**: `message:send`, `typing:start`, `typing:stop`, `conversation:join`, `conversation:leave`, `message:delivered`, `message:read`, `key:exchange`
+**Client → Serveur** : `message:send`, `typing:start`, `typing:stop`, `conversation:join`, `conversation:leave`, `message:delivered`, `message:read`, `key:exchange`
 
-**Server → Client**: `message:new`, `typing:indicator`, `user:presence`, `message:status`, `key:received`, `error`
+**Serveur → Client** : `message:new`, `typing:indicator`, `user:presence`, `message:status`, `key:received`, `error`
 
 ---
 
@@ -191,104 +191,104 @@ Request → Network Guard → Helmet → Rate Limiter → Input Guard →
 
 | Document | Description |
 |----------|-------------|
-| [Architecture Overview](docs/architecture.md) | System design, module layout, data flows |
-| [Security Model](docs/security-model.md) | Threat model, encryption details, defense layers |
-| [Message Lifecycle](docs/message-lifecycle.md) | End-to-end message flow from send to receive |
-| [Packet Format](docs/packet-format.md) | Wire protocol and MessageEnvelope schema |
-| [Pairing Flow](docs/pairing-flow.md) | How users establish encrypted channels |
-| [Deployment Guide](docs/deployment.md) | Dev, Docker, and production setup |
-| [Examples](docs/examples.md) | Code examples for common operations |
+| [Vue d'ensemble de l'architecture](docs/architecture.md) | Conception du système, organisation des modules, flux de données |
+| [Modèle de sécurité](docs/security-model.md) | Modèle de menaces, détails du chiffrement, couches de défense |
+| [Cycle de vie des messages](docs/message-lifecycle.md) | Flux de bout en bout d'un message, de l'envoi à la réception |
+| [Format des paquets](docs/packet-format.md) | Protocole réseau et schéma MessageEnvelope |
+| [Flux d'appairage](docs/pairing-flow.md) | Comment les utilisateurs établissent des canaux chiffrés |
+| [Guide de déploiement](docs/deployment.md) | Configuration dev, Docker et production |
+| [Exemples](docs/examples.md) | Exemples de code pour les opérations courantes |
 
 ---
 
-## Project Structure
+## Structure du projet
 
 ```
 apps/server/src/
-├── config.ts             ← Environment configuration
-├── db.ts                 ← MongoDB connection
-├── redis.ts              ← Redis connection
-├── index.ts              ← Server bootstrap + shutdown
-├── models/               ← User, Message, Conversation schemas
-├── routes/               ← REST API (auth, conversations, messages, attachments, health)
-├── socket/               ← Real-time handlers (messages, presence, typing)
-├── middleware/            ← Auth, rate limiting, security guards
-└── utils/                ← JWT, logging, security monitor
+├── config.ts             ← Configuration de l'environnement
+├── db.ts                 ← Connexion MongoDB
+├── redis.ts              ← Connexion Redis
+├── index.ts              ← Démarrage du serveur + arrêt
+├── models/               ← Schémas User, Message, Conversation
+├── routes/               ← API REST (auth, conversations, messages, attachments, health)
+├── socket/               ← Gestionnaires temps réel (messages, présence, saisie)
+├── middleware/            ← Auth, limitation de débit, gardes de sécurité
+└── utils/                ← JWT, journalisation, moniteur de sécurité
 
 apps/web/src/
-├── app/                  ← Next.js pages and layouts
-├── components/           ← React components (auth, chat, layout, ui)
-├── hooks/                ← Custom hooks (crypto, socket, messages, presence)
+├── app/                  ← Pages et layouts Next.js
+├── components/           ← Composants React (auth, chat, layout, ui)
+├── hooks/                ← Hooks personnalisés (crypto, socket, messages, présence)
 ├── lib/
-│   ├── crypto/           ← E2EE layer (ECDH + AES-GCM) — isolated from UI
-│   ├── store/            ← Zustand state management
-│   ├── api.ts            ← REST client
-│   └── socket.ts         ← Socket.IO client
+│   ├── crypto/           ← Couche E2EE (ECDH + AES-GCM) — isolée de l'UI
+│   ├── store/            ← Gestion d'état Zustand
+│   ├── api.ts            ← Client REST
+│   └── socket.ts         ← Client Socket.IO
 ├── workers/              ← Web workers
-└── __tests__/            ← Jest crypto tests
+└── __tests__/            ← Tests crypto Jest
 
 packages/shared/src/
-├── types/                ← Shared TypeScript interfaces
-└── validators/           ← Zod validation schemas
+├── types/                ← Interfaces TypeScript partagées
+└── validators/           ← Schémas de validation Zod
 ```
 
 ---
 
-## Build & Test
+## Build & Tests
 
 ```bash
-# Build all (shared → server → web)
+# Tout compiler (shared → server → web)
 npm run build
 
-# Run tests
+# Lancer les tests
 npm run test
 
 # Lint
 npm run lint
 
-# Type check
+# Vérification des types
 npm run type-check --workspace=apps/web
 ```
 
 ---
 
-## Roadmap
+## Feuille de route
 
-### ✅ Completed
+### ✅ Terminé
 
-- End-to-end encryption (ECDH P-256 + AES-GCM 256)
-- Anonymous registration and JWT auth
-- Real-time messaging with Socket.IO
-- Burn-after-reading and self-destructing conversations
-- Delivery and read receipts
-- Encrypted file attachments
-- Security guards and auto-defense
-- Rate limiting (REST + Socket.IO)
-- Docker Compose with health checks
-- Crypto unit tests (15 passing)
-- CI pipeline (lint, build, test)
+- Chiffrement de bout en bout (ECDH P-256 + AES-GCM 256)
+- Inscription anonyme et authentification JWT
+- Messagerie en temps réel avec Socket.IO
+- Messages à lecture unique et conversations autodestructibles
+- Accusés de réception et de lecture
+- Pièces jointes chiffrées
+- Gardes de sécurité et défense automatique
+- Limitation de débit (REST + Socket.IO)
+- Docker Compose avec vérifications de santé
+- Tests unitaires crypto (15 réussis)
+- Pipeline CI (lint, build, test)
 
-### 🔜 Planned
+### 🔜 Planifié
 
-- [ ] Per-message forward secrecy (Double Ratchet protocol)
-- [ ] Multi-device key synchronization
-- [ ] Group conversations
-- [ ] Push notifications
-- [ ] Key fingerprint verification (anti-MITM)
-- [ ] End-to-end integration tests
-- [ ] Mobile app (React Native)
-- [ ] Onion routing for metadata protection
+- [ ] Confidentialité persistante par message (protocole Double Ratchet)
+- [ ] Synchronisation des clés multi-appareils
+- [ ] Conversations de groupe
+- [ ] Notifications push
+- [ ] Vérification d'empreintes de clés (anti-MITM)
+- [ ] Tests d'intégration de bout en bout
+- [ ] Application mobile (React Native)
+- [ ] Routage en oignon pour la protection des métadonnées
 
 ---
 
-## Contributing
+## Contribuer
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour les directives.
 
-## Security
+## Sécurité
 
-See [SECURITY.md](SECURITY.md) for our security policy and responsible disclosure process.
+Voir [SECURITY.md](SECURITY.md) pour notre politique de sécurité et le processus de divulgation responsable.
 
-## License
+## Licence
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+Ce projet est sous licence MIT — voir [LICENSE](LICENSE) pour les détails.

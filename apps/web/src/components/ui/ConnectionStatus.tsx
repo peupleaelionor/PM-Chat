@@ -58,22 +58,22 @@ export function ConnectionStatus() {
 
   const config: Record<ConnectionState, { text: string; className: string; icon: string }> = {
     connected: {
-      text: 'Connected',
+      text: 'Connecté',
       className: 'bg-green-900/80 text-green-300 border-green-700',
       icon: '✓',
     },
     connecting: {
-      text: 'Connecting…',
+      text: 'Connexion en cours…',
       className: 'bg-yellow-900/80 text-yellow-300 border-yellow-700',
       icon: '⟳',
     },
     disconnected: {
-      text: 'Offline — messages will be sent when reconnected',
+      text: 'Hors ligne — les messages seront envoyés après reconnexion',
       className: 'bg-red-900/80 text-red-300 border-red-700',
       icon: '✕',
     },
     reconnecting: {
-      text: 'Reconnecting…',
+      text: 'Reconnexion en cours…',
       className: 'bg-yellow-900/80 text-yellow-300 border-yellow-700',
       icon: '⟳',
     },

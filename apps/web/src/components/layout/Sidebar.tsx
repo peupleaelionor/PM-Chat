@@ -28,7 +28,7 @@ export function Sidebar({ activeConversationId }: { activeConversationId?: strin
       setShowNewChat(false);
       setRecipientId('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create conversation');
+      setError(e instanceof Error ? e.message : 'Échec de la création de la conversation');
     } finally {
       setIsCreating(false);
     }
@@ -49,7 +49,7 @@ export function Sidebar({ activeConversationId }: { activeConversationId?: strin
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
             <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
           </svg>
-          New Chat
+          Nouvelle conversation
         </Button>
 
         {showNewChat && (
@@ -58,7 +58,7 @@ export function Sidebar({ activeConversationId }: { activeConversationId?: strin
               type="text"
               value={recipientId}
               onChange={(e) => setRecipientId(e.target.value)}
-              placeholder="Enter recipient's user ID…"
+              placeholder="Entrez l'ID de l'utilisateur…"
               className="w-full rounded-lg bg-bg-tertiary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary"
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             />
@@ -71,14 +71,14 @@ export function Sidebar({ activeConversationId }: { activeConversationId?: strin
                 disabled={isCreating || !recipientId.trim()}
                 className="flex-1"
               >
-                {isCreating ? 'Creating…' : 'Start Chat'}
+                {isCreating ? 'Création…' : 'Démarrer la conversation'}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => { setShowNewChat(false); setError(''); }}
               >
-                Cancel
+                Annuler
               </Button>
             </div>
           </div>
@@ -102,7 +102,7 @@ export function Sidebar({ activeConversationId }: { activeConversationId?: strin
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
             <path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.205 1.251l-1.18 2.044a1 1 0 01-1.186.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.113a7.048 7.048 0 010-2.228L1.821 7.773a1 1 0 01-.205-1.251l1.18-2.044a1 1 0 011.186-.447l1.598.54A6.992 6.992 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
           </svg>
-          Settings
+          Paramètres
         </Link>
       </div>
     </aside>

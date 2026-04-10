@@ -1,10 +1,10 @@
-# Examples
+# Exemples
 
-> Practical code examples showing how PM-Chat's encryption and messaging works.
+> Exemples de code pratiques montrant le fonctionnement du chiffrement et de la messagerie de PM-Chat.
 
 ---
 
-## Sending a Message
+## Envoi d'un message
 
 ```typescript
 import { deriveSharedKey } from '@/lib/crypto/keyExchange';
@@ -18,16 +18,16 @@ async function sendMessage(
   myPrivateKey: CryptoKey,
   peerPublicKey: CryptoKey
 ) {
-  // 1. Derive shared AES-GCM key from ECDH
+  // 1. Dériver la clé partagée AES-GCM à partir d'ECDH
   const sharedKey = await deriveSharedKey(myPrivateKey, peerPublicKey);
 
-  // 2. Encrypt the plaintext
+  // 2. Chiffrer le texte en clair
   const { iv, ciphertext } = await encryptMessage(sharedKey, plaintext);
 
-  // 3. Package into an envelope with a replay-protection nonce
+  // 3. Empaqueter dans une enveloppe avec un nonce de protection contre le rejeu
   const envelope = packEnvelope(iv, ciphertext, myUserId);
 
-  // 4. Send via Socket.IO
+  // 4. Envoyer via Socket.IO
   socket.emit('message:send', {
     conversationId,
     encryptedPayload: ciphertext,
@@ -39,7 +39,7 @@ async function sendMessage(
 
 ---
 
-## Receiving a Message
+## Réception d'un message
 
 ```typescript
 import { deriveSharedKey } from '@/lib/crypto/keyExchange';
@@ -50,54 +50,54 @@ async function handleIncomingMessage(
   myPrivateKey: CryptoKey,
   senderPublicKey: CryptoKey
 ) {
-  // 1. Derive the same shared key (ECDH is symmetric)
+  // 1. Dériver la même clé partagée (ECDH est symétrique)
   const sharedKey = await deriveSharedKey(myPrivateKey, senderPublicKey);
 
-  // 2. Decrypt the message
+  // 2. Déchiffrer le message
   try {
     const plaintext = await decryptMessage(sharedKey, message.iv, message.encryptedPayload);
-    console.log('Decrypted message:', plaintext);
+    console.log('Message déchiffré :', plaintext);
     return plaintext;
   } catch (error) {
-    console.error('Decryption failed — possible key mismatch or tampering');
-    return '[Unable to decrypt]';
+    console.error('Échec du déchiffrement — possible incompatibilité de clés ou altération');
+    return '[Impossible de déchiffrer]';
   }
 }
 ```
 
 ---
 
-## Handling TTL Expiration
+## Gestion de l'expiration TTL
 
 ```typescript
-// When creating a self-destructing message:
+// Lors de la création d'un message autodestructeur :
 socket.emit('message:send', {
   conversationId: 'conv_abc123',
   encryptedPayload: ciphertext,
   iv: iv,
   nonce: nonce,
-  expiresInMs: 60000, // Message expires in 60 seconds
+  expiresInMs: 60000, // Le message expire dans 60 secondes
 });
 
-// Server-side: MongoDB stores expiresAt = Date.now() + expiresInMs
-// MongoDB TTL index automatically deletes the document after expiry.
+// Côté serveur : MongoDB stocke expiresAt = Date.now() + expiresInMs
+// L'index TTL de MongoDB supprime automatiquement le document après expiration.
 
-// Client-side: When rendering messages, check expiry:
+// Côté client : Lors du rendu des messages, vérifier l'expiration :
 function isExpired(message: { expiresAt?: string }): boolean {
   if (!message.expiresAt) return false;
   return new Date(message.expiresAt).getTime() < Date.now();
 }
 
-// Filter expired messages in the UI
+// Filtrer les messages expirés dans l'interface
 const visibleMessages = messages.filter(msg => !isExpired(msg));
 ```
 
 ---
 
-## Handling Burn-After-Reading
+## Gestion de la lecture unique (Burn-After-Reading)
 
 ```typescript
-// Send a burn-after-reading message:
+// Envoyer un message à lecture unique :
 socket.emit('message:send', {
   conversationId: 'conv_abc123',
   encryptedPayload: ciphertext,
@@ -106,80 +106,80 @@ socket.emit('message:send', {
   burnAfterReading: true,
 });
 
-// On the recipient side, after reading:
+// Côté destinataire, après lecture :
 function markAsRead(socket: Socket, messageId: string, burnAfterReading: boolean) {
-  // Acknowledge read
+  // Accuser réception de la lecture
   socket.emit('message:read', messageId);
 
   if (burnAfterReading) {
-    // Remove from local store after a brief delay
+    // Supprimer du magasin local après un bref délai
     setTimeout(() => {
       chatStore.getState().removeMessage(conversationId, messageId);
-    }, 3000); // Show for 3 seconds before burning
+    }, 3000); // Afficher pendant 3 secondes avant destruction
   }
 }
 ```
 
 ---
 
-## Handling Invalid Packets
+## Gestion des paquets invalides
 
 ```typescript
 import { MessageEnvelopeSchema } from '@pm-chat/shared';
 
-// Server-side validation before processing any message:
+// Validation côté serveur avant le traitement de tout message :
 function validateMessagePayload(payload: unknown) {
   const result = MessageEnvelopeSchema.safeParse(payload);
 
   if (!result.success) {
-    // Log the validation error (never log the payload content)
-    logger.warn('Invalid message payload', {
+    // Journaliser l'erreur de validation (ne jamais journaliser le contenu du payload)
+    logger.warn('Payload de message invalide', {
       errors: result.error.issues.map(i => i.message),
     });
 
-    // Return error to client
+    // Retourner l'erreur au client
     return { valid: false, error: 'INVALID_PAYLOAD' };
   }
 
   return { valid: true, data: result.data };
 }
 
-// Replay protection check:
+// Vérification de protection contre le rejeu :
 async function checkReplay(nonce: string, redis: Redis): Promise<boolean> {
-  // SET NX: only succeeds if key doesn't exist
-  // EX 86400: expire after 24 hours
+  // SET NX : ne réussit que si la clé n'existe pas
+  // EX 86400 : expire après 24 heures
   const result = await redis.set(`nonce:${nonce}`, '1', 'EX', 86400, 'NX');
 
   if (result === null) {
-    // Nonce already exists — this is a replay attack
-    logger.warn('Replay attack detected', { nonce });
+    // Le nonce existe déjà — il s'agit d'une attaque par rejeu
+    logger.warn('Attaque par rejeu détectée', { nonce });
     return false;
   }
 
-  return true; // Nonce is new, message is valid
+  return true; // Le nonce est nouveau, le message est valide
 }
 ```
 
 ---
 
-## Key Generation and Exchange
+## Génération et échange de clés
 
 ```typescript
 import { generateKeyPair, exportPublicKey } from '@/lib/crypto/keyGeneration';
 import { storePrivateKey } from '@/lib/crypto/keyStorage';
 
-// On registration:
+// À l'inscription :
 async function setupEncryption() {
-  // 1. Generate ECDH P-256 key pair
+  // 1. Générer une paire de clés ECDH P-256
   const keyPair = await generateKeyPair();
 
-  // 2. Export public key as JWK string (safe to send to server)
+  // 2. Exporter la clé publique au format JWK (sûr à envoyer au serveur)
   const publicKeyJwk = await exportPublicKey(keyPair.publicKey);
 
-  // 3. Store private key securely in sessionStorage
+  // 3. Stocker la clé privée de manière sécurisée dans sessionStorage
   storePrivateKey(keyPair.privateKey);
 
-  // 4. Send public key to server during registration
+  // 4. Envoyer la clé publique au serveur lors de l'inscription
   const response = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -195,28 +195,28 @@ async function setupEncryption() {
 
 ---
 
-## Full End-to-End Example
+## Exemple complet de bout en bout
 
 ```typescript
-// === ALICE'S DEVICE ===
+// === APPAREIL D'ALICE ===
 
-// 1. Alice generates keys and registers
+// 1. Alice génère les clés et s'inscrit
 const aliceKeys = await generateKeyPair();
 const alicePublicJwk = await exportPublicKey(aliceKeys.publicKey);
-// Register with server...
+// Inscription auprès du serveur...
 
-// 2. Alice creates a conversation with Bob
+// 2. Alice crée une conversation avec Bob
 // POST /api/conversations { participantIds: [bobUserId] }
 
-// 3. Alice fetches Bob's public key
+// 3. Alice récupère la clé publique de Bob
 const bobProfile = await getUser(bobUserId);
 const bobPublicKey = await importPublicKey(bobProfile.publicKey);
 
-// 4. Alice derives shared key
+// 4. Alice dérive la clé partagée
 const sharedKey = await deriveSharedKey(aliceKeys.privateKey, bobPublicKey);
 
-// 5. Alice encrypts and sends
-const { iv, ciphertext } = await encryptMessage(sharedKey, 'Hello Bob! This is private.');
+// 5. Alice chiffre et envoie
+const { iv, ciphertext } = await encryptMessage(sharedKey, 'Bonjour Bob ! Ceci est privé.');
 const envelope = packEnvelope(iv, ciphertext, aliceUserId);
 socket.emit('message:send', {
   conversationId,
@@ -226,18 +226,18 @@ socket.emit('message:send', {
 });
 
 
-// === BOB'S DEVICE ===
+// === APPAREIL DE BOB ===
 
-// 6. Bob receives the message via Socket.IO
+// 6. Bob reçoit le message via Socket.IO
 socket.on('message:new', async (msg) => {
-  // 7. Bob fetches Alice's public key (if not cached)
+  // 7. Bob récupère la clé publique d'Alice (si pas en cache)
   const alicePublicKey = await importPublicKey(aliceProfile.publicKey);
 
-  // 8. Bob derives the same shared key
+  // 8. Bob dérive la même clé partagée
   const sharedKey = await deriveSharedKey(bobKeys.privateKey, alicePublicKey);
 
-  // 9. Bob decrypts
+  // 9. Bob déchiffre
   const plaintext = await decryptMessage(sharedKey, msg.iv, msg.encryptedPayload);
-  console.log(plaintext); // "Hello Bob! This is private."
+  console.log(plaintext); // "Bonjour Bob ! Ceci est privé."
 });
 ```

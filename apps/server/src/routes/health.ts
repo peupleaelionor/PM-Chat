@@ -13,21 +13,24 @@ const router = Router();
  */
 router.get("/", async (_req: Request, res: Response) => {
   const mongoState = mongoose.connection.readyState;
-  const mongoStatus = mongoState === 1 ? "connected" : mongoState === 2 ? "connecting" : "disconnected";
+  const mongoConnected = mongoState === 1;
+  const mongoStatus = mongoConnected ? "connecté" : mongoState === 2 ? "en cours de connexion" : "déconnecté";
 
-  let redisStatus = "disconnected";
+  let redisConnected = false;
+  let redisStatus = "déconnecté";
   try {
     const redis = getRedis();
     const pong = await redis.ping();
-    redisStatus = pong === "PONG" ? "connected" : "degraded";
+    redisConnected = pong === "PONG";
+    redisStatus = redisConnected ? "connecté" : "dégradé";
   } catch {
-    redisStatus = "disconnected";
+    redisStatus = "déconnecté";
   }
 
-  const isHealthy = mongoStatus === "connected" && redisStatus === "connected";
+  const isHealthy = mongoConnected && redisConnected;
 
   res.status(isHealthy ? 200 : 503).json({
-    status: isHealthy ? "ok" : "degraded",
+    status: isHealthy ? "ok" : "dégradé",
     timestamp: new Date().toISOString(),
     version: config.VERSION,
     securityMode: config.securityMode,
@@ -45,7 +48,7 @@ router.get("/", async (_req: Request, res: Response) => {
  */
 router.get("/detailed", (_req: Request, res: Response) => {
   if (config.isProduction) {
-    res.status(403).json({ error: "Not available in production" });
+    res.status(403).json({ error: "Non disponible en production" });
     return;
   }
 

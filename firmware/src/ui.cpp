@@ -126,21 +126,21 @@ static void draw_splash() {
     s_disp.setFont(u8g2_font_helvR08_tr);
     draw_centered("LoRa Mesh v1.0", 44);
     s_disp.setFont(u8g2_font_5x7_tr);
-    draw_centered("Initializing...", 58);
+    draw_centered("Initialisation...", 58);
 }
 
 static void draw_setup_welcome() {
-    draw_header("Setup");
+    draw_header("Configuration");
     s_disp.setFont(u8g2_font_helvR08_tr);
-    draw_centered("Welcome to PM-Chat", 28);
+    draw_centered("Bienvenue sur PM-Chat", 28);
     s_disp.setFont(u8g2_font_5x7_tr);
-    draw_centered("Enter a 4-digit Mesh PIN", 40);
-    draw_centered("Share with your group", 50);
+    draw_centered("Entrez un code PIN Mesh", 40);
+    draw_centered("Partagez avec votre groupe", 50);
     draw_footer(NULL, "OK:start", NULL);
 }
 
 static void draw_setup_pin() {
-    draw_header("Mesh PIN");
+    draw_header("Code PIN Mesh");
 
     s_disp.setFont(u8g2_font_helvB12_tr);
     char display[9] = "_ _ _ _";
@@ -161,19 +161,19 @@ static void draw_setup_pin() {
 }
 
 static void draw_device_info() {
-    draw_header("Device Info");
+    draw_header("Infos appareil");
 
     char hex_id[9];
     pkt::id_to_hex(identity::get_device_id(), hex_id);
 
     s_disp.setFont(u8g2_font_5x7_tr);
-    draw_centered("Your Device ID:", 26);
+    draw_centered("Votre ID d'appareil :", 26);
 
     s_disp.setFont(u8g2_font_helvB12_tr);
     draw_centered(hex_id, 42);
 
     s_disp.setFont(u8g2_font_5x7_tr);
-    draw_centered("Share this with peers", 52);
+    draw_centered("Partagez ceci avec vos pairs", 52);
 
     draw_footer(NULL, "OK:continue", NULL);
 }
@@ -181,16 +181,16 @@ static void draw_device_info() {
 static void draw_inbox() {
     int unread = msg_store::unread_count();
     char title[24];
-    snprintf(title, sizeof(title), "Inbox (%d)", unread);
+    snprintf(title, sizeof(title), "Réception (%d)", unread);
     draw_header(title);
 
     s_peer_count = msg_store::get_peers(s_peer_list, MAX_PEERS);
 
     if (s_peer_count == 0) {
         s_disp.setFont(u8g2_font_helvR08_tr);
-        draw_centered("No messages yet", 35);
+        draw_centered("Aucun message", 35);
         s_disp.setFont(u8g2_font_5x7_tr);
-        draw_centered("Send a ping or compose", 47);
+        draw_centered("Envoyez un ping ou composez", 47);
     } else {
         s_disp.setFont(u8g2_font_5x7_tr);
         int visible_rows = 4;
@@ -244,7 +244,7 @@ static void draw_conversation() {
     s_disp.setFont(u8g2_font_5x7_tr);
 
     if (s_conv_count == 0) {
-        draw_centered("No messages", 35);
+        draw_centered("Aucun message", 35);
     } else {
         int visible_rows = 4;
         int start = s_conv_scroll;
@@ -318,9 +318,9 @@ static void draw_compose() {
 }
 
 static void draw_sending() {
-    draw_header("Sending");
+    draw_header("Envoi");
     s_disp.setFont(u8g2_font_helvR08_tr);
-    draw_centered("Transmitting...", 32);
+    draw_centered("Transmission...", 32);
 
     /* Simple animated dots */
     uint8_t dots = (millis() / 300) % 4;
@@ -334,14 +334,14 @@ static void draw_sending() {
 }
 
 static void draw_settings() {
-    draw_header("Settings");
+    draw_header("Paramètres");
 
     static const char *items[] = {
-        "Mesh PIN",
-        "PIN Lock",
-        "Brightness",
-        "Test Mode",
-        "Factory Reset"
+        "Code PIN Mesh",
+        "Verrouillage PIN",
+        "Luminosité",
+        "Mode test",
+        "Réinitialisation usine"
     };
 
     s_disp.setFont(u8g2_font_5x7_tr);
@@ -377,7 +377,7 @@ static void draw_settings() {
 }
 
 static void draw_network() {
-    draw_header("Network");
+    draw_header("Réseau");
 
     s_disp.setFont(u8g2_font_5x7_tr);
     uint8_t y = CONTENT_Y + 4;
@@ -393,45 +393,45 @@ static void draw_network() {
     s_disp.drawStr(2, y, line);
     y += 10;
 
-    snprintf(line, sizeof(line), "Relayed: %lu", (unsigned long)mesh::get_relayed_count());
+    snprintf(line, sizeof(line), "Relayés: %lu", (unsigned long)mesh::get_relayed_count());
     s_disp.drawStr(2, y, line);
     y += 10;
 
-    snprintf(line, sizeof(line), "Dropped: %lu", (unsigned long)mesh::get_dropped_count());
+    snprintf(line, sizeof(line), "Perdus: %lu", (unsigned long)mesh::get_dropped_count());
     s_disp.drawStr(2, y, line);
 
     draw_footer(NULL, NULL, "Back:hold^");
 }
 
 static void draw_wipe_confirm() {
-    draw_header("! WIPE !");
+    draw_header("! EFFACER !");
 
     s_disp.setFont(u8g2_font_helvR08_tr);
-    draw_centered("Erase all data?", 28);
-    draw_centered("This cannot be undone!", 40);
+    draw_centered("Effacer toutes les données ?", 28);
+    draw_centered("Action irréversible !", 40);
 
     s_disp.setFont(u8g2_font_helvB08_tr);
     if (s_wipe_sel == 0) {
         s_disp.drawFrame(20, 46, 40, 12);
-        s_disp.drawStr(28, 55, "Cancel");
+        s_disp.drawStr(24, 55, "Annuler");
         s_disp.drawBox(68, 46, 40, 12);
         s_disp.setDrawColor(0);
-        s_disp.drawStr(78, 55, "WIPE");
+        s_disp.drawStr(72, 55, "EFFACER");
         s_disp.setDrawColor(1);
     } else {
         s_disp.drawBox(20, 46, 40, 12);
         s_disp.setDrawColor(0);
-        s_disp.drawStr(28, 55, "Cancel");
+        s_disp.drawStr(24, 55, "Annuler");
         s_disp.setDrawColor(1);
         s_disp.drawFrame(68, 46, 40, 12);
-        s_disp.drawStr(78, 55, "WIPE");
+        s_disp.drawStr(72, 55, "EFFACER");
     }
 
-    draw_footer("<:cancel", "OK:select", ">:wipe");
+    draw_footer("<:annuler", "OK:choisir", ">:effacer");
 }
 
 static void draw_pin_entry() {
-    draw_header("PIN Lock");
+    draw_header("Verrouillage PIN");
 
     s_disp.setFont(u8g2_font_helvB12_tr);
     char display[9] = "* * * *";
@@ -446,30 +446,30 @@ static void draw_pin_entry() {
 }
 
 static void draw_test() {
-    draw_header("Test Mode");
+    draw_header("Mode test");
 
     s_disp.setFont(u8g2_font_5x7_tr);
     uint8_t y = CONTENT_Y + 4;
 
-    s_disp.drawStr(2, y, "Radio: OK");
+    s_disp.drawStr(2, y, "Radio : OK");
     y += 10;
 
     char line[28];
-    snprintf(line, sizeof(line), "Batt: %dmV %d%%",
+    snprintf(line, sizeof(line), "Batt : %dmV %d%%",
              battery::voltage_mv(), battery::percent());
     s_disp.drawStr(2, y, line);
     y += 10;
 
-    s_disp.drawStr(2, y, "Buttons: press any");
+    s_disp.drawStr(2, y, "Boutons : appuyez");
     y += 10;
 
-    s_disp.drawStr(2, y, "OLED: display OK");
+    s_disp.drawStr(2, y, "OLED : affichage OK");
 
     draw_footer(NULL, NULL, "Back:hold^");
 }
 
 static void draw_error() {
-    draw_header("ERROR");
+    draw_header("ERREUR");
 
     s_disp.setFont(u8g2_font_helvR08_tr);
     /* Word-wrap error message */

@@ -1,63 +1,63 @@
-# Security Model
+# Modèle de sécurité
 
-> PM-Chat implements defense-in-depth security. The server is designed as a zero-knowledge relay — it never has access to plaintext messages or private keys.
-
----
-
-## Threat Model
-
-| Threat                          | Mitigation                                                      |
-|----------------------------------|-----------------------------------------------------------------|
-| Server compromise                | E2EE — server stores only ciphertext it cannot decrypt           |
-| Man-in-the-middle               | ECDH key exchange + HTTPS/WSS transport                          |
-| Replay attacks                   | Per-message nonce, stored in Redis with SET NX                   |
-| Brute force auth                 | Rate limiting on auth endpoints + progressive delays             |
-| XSS                              | CSP headers, DOMPurify, Helmet, input sanitization               |
-| Injection                        | Zod schema validation, NUL byte stripping, parameterized queries |
-| Session hijacking                | Short-lived JWT access tokens, refresh rotation                  |
-| Credential stuffing              | No passwords — anonymous registration                            |
-| Data exfiltration                | No PII stored, no plaintext messages on server                   |
-| DDoS                             | Global + per-user rate limiting, socket event throttling          |
-| Unauthorized API access          | JWT authentication on all protected routes                       |
+> PM-Chat implémente une sécurité en profondeur. Le serveur est conçu comme un relais à connaissance nulle — il n'a jamais accès aux messages en clair ni aux clés privées.
 
 ---
 
-## Encryption Architecture
+## Modèle de menaces
 
-### Key Exchange (ECDH P-256)
+| Menace                           | Atténuation                                                       |
+|----------------------------------|-------------------------------------------------------------------|
+| Compromission du serveur          | E2EE — le serveur ne stocke que du texte chiffré qu'il ne peut pas déchiffrer |
+| Attaque de l'homme du milieu     | Échange de clés ECDH + transport HTTPS/WSS                        |
+| Attaques par rejeu               | Nonce par message, stocké dans Redis avec SET NX                   |
+| Force brute sur l'auth           | Limitation de débit sur les endpoints d'auth + délais progressifs  |
+| XSS                              | En-têtes CSP, DOMPurify, Helmet, assainissement des entrées        |
+| Injection                        | Validation de schéma Zod, suppression des octets NUL, requêtes paramétrées |
+| Détournement de session          | Jetons d'accès JWT à courte durée de vie, rotation du rafraîchissement |
+| Bourrage d'identifiants          | Pas de mots de passe — inscription anonyme                         |
+| Exfiltration de données          | Aucune donnée personnelle stockée, pas de messages en clair sur le serveur |
+| DDoS                             | Limitation de débit globale + par utilisateur, régulation des événements socket |
+| Accès non autorisé à l'API       | Authentification JWT sur toutes les routes protégées               |
+
+---
+
+## Architecture de chiffrement
+
+### Échange de clés (ECDH P-256)
 
 ```
      Alice                                   Bob
        │                                      │
-       │  1. Generate ECDH P-256 key pair     │  1. Generate ECDH P-256 key pair
+       │  1. Générer paire de clés ECDH P-256 │  1. Générer paire de clés ECDH P-256
        │     (privateA, publicA)              │     (privateB, publicB)
        │                                      │
-       │  2. publicA ──────────────────────►  │  2. Store publicA
+       │  2. publicA ──────────────────────►  │  2. Stocker publicA
        │                                      │
-       │  3. Store publicB  ◄──────────────── │  3. publicB
+       │  3. Stocker publicB ◄──────────────── │  3. publicB
        │                                      │
        │  4. SharedSecret =                   │  4. SharedSecret =
        │     ECDH(privateA, publicB)          │     ECDH(privateB, publicA)
        │                                      │
-       │  Both derive identical AES-GCM 256-bit key
+       │  Les deux dérivent une clé AES-GCM 256 bits identique
        └──────────────────────────────────────┘
 ```
 
-### Message Encryption (AES-GCM 256)
+### Chiffrement des messages (AES-GCM 256)
 
 ```
-Plaintext Message
+Message en clair
         │
         ▼
 ┌───────────────────┐
-│ Generate 12-byte  │
-│   random IV       │
+│ Générer un IV      │
+│ aléatoire 12 octets│
 └───────┬───────────┘
         │
         ▼
 ┌───────────────────┐
-│  AES-GCM Encrypt  │◄── Shared Key (derived via ECDH)
-│  (256-bit key)    │
+│ Chiffrement        │◄── Clé partagée (dérivée via ECDH)
+│ AES-GCM (clé 256) │
 └───────┬───────────┘
         │
         ▼
@@ -74,206 +74,206 @@ Plaintext Message
 └───────────────────┘
         │
         ▼
-  Sent to Server
-  (server sees only opaque base64 blobs)
+  Envoyé au serveur
+  (le serveur ne voit que des blobs base64 opaques)
 ```
 
-### Decryption Flow
+### Flux de déchiffrement
 
 ```
-Receive MessageEnvelope from server
+Réception du MessageEnvelope depuis le serveur
         │
         ▼
 ┌───────────────────┐
-│ Derive shared key  │◄── Our private key + Sender's public key
-│ (ECDH)            │
+│ Dériver la clé     │◄── Notre clé privée + clé publique de l'expéditeur
+│ partagée (ECDH)   │
 └───────┬───────────┘
         │
         ▼
 ┌───────────────────┐
-│  AES-GCM Decrypt  │◄── IV from envelope
-│                    │
+│ Déchiffrement      │◄── IV de l'enveloppe
+│ AES-GCM           │
 └───────┬───────────┘
         │
         ▼
-   Plaintext Message
-   (displayed to user)
+   Message en clair
+   (affiché à l'utilisateur)
 ```
 
 ---
 
-## Key Management
+## Gestion des clés
 
-| Property             | Implementation                                  |
-|----------------------|--------------------------------------------------|
-| Key generation       | ECDH P-256 via Web Crypto API                    |
-| Key storage          | Private key in `sessionStorage` only              |
-| Key lifetime         | Session-scoped (lost on tab close)                |
-| Key extraction       | Derived keys are **non-extractable**              |
-| Public key format    | JWK (JSON Web Key)                                |
-| Server key access    | Public keys only — private keys never leave device |
+| Propriété                | Implémentation                                    |
+|--------------------------|---------------------------------------------------|
+| Génération de clés       | ECDH P-256 via Web Crypto API                     |
+| Stockage des clés        | Clé privée dans `sessionStorage` uniquement        |
+| Durée de vie des clés    | Limitée à la session (perdue à la fermeture de l'onglet) |
+| Extraction des clés      | Les clés dérivées sont **non-extractables**        |
+| Format de clé publique   | JWK (JSON Web Key)                                 |
+| Accès serveur aux clés   | Clés publiques uniquement — les clés privées ne quittent jamais l'appareil |
 
-### Why sessionStorage?
+### Pourquoi sessionStorage ?
 
-- **Not** `localStorage` — prevents key persistence across tabs/sessions
-- Keys are automatically cleared when the browser tab closes
-- Prevents key theft via XSS from persisted storage
-- Trade-off: Users must re-register when opening a new tab
+- **Pas** `localStorage` — empêche la persistance des clés entre les onglets/sessions
+- Les clés sont automatiquement effacées lorsque l'onglet du navigateur se ferme
+- Empêche le vol de clés via XSS depuis le stockage persistant
+- Compromis : les utilisateurs doivent se réinscrire en ouvrant un nouvel onglet
 
 ---
 
-## Replay Protection
+## Protection anti-rejeu
 
-Each message includes a cryptographically random `nonce` (16 bytes, base64-encoded).
+Chaque message inclut un `nonce` cryptographiquement aléatoire (16 octets, encodé en base64).
 
 ```
-Client sends message with nonce
+Le client envoie un message avec un nonce
         │
         ▼
-Server: Redis SET NX (nonce, 1, TTL=24h)
+Serveur : Redis SET NX (nonce, 1, TTL=24h)
         │
-        ├── Success (new nonce) → Process message
-        └── Failure (duplicate) → Reject as replay
+        ├── Succès (nouveau nonce) → Traiter le message
+        └── Échec (doublon) → Rejeter comme rejeu
 ```
 
-- Nonces are stored in Redis with a 24-hour TTL
-- `SET NX` ensures atomic check-and-set (no race conditions)
-- After TTL expiration, old nonces are automatically cleaned up
+- Les nonces sont stockés dans Redis avec un TTL de 24 heures
+- `SET NX` assure une vérification atomique (pas de conditions de course)
+- Après l'expiration du TTL, les anciens nonces sont automatiquement nettoyés
 
 ---
 
-## Authentication
+## Authentification
 
-### JWT Token Architecture
+### Architecture des jetons JWT
 
 ```
-Registration/Login
+Inscription/Connexion
         │
         ▼
 ┌───────────────────┐
-│  Access Token      │  Short-lived (15 min default)
-│  (in memory only)  │  Used for API requests
+│  Jeton d'accès     │  Courte durée de vie (15 min par défaut)
+│ (en mémoire seul.) │  Utilisé pour les requêtes API
 └───────────────────┘
         +
 ┌───────────────────┐
-│  Refresh Token     │  Longer-lived (7 days default)
-│  (sessionStorage)  │  Used to get new access tokens
+│  Jeton de rafraîch.│  Durée de vie plus longue (7 jours par défaut)
+│  (sessionStorage)  │  Utilisé pour obtenir de nouveaux jetons d'accès
 └───────────────────┘
 ```
 
-- Access tokens are **never persisted** to storage
-- Refresh tokens use rotation — old tokens are invalidated on refresh
-- Token revocation tracked in Redis for immediate invalidation
+- Les jetons d'accès ne sont **jamais persistés** dans le stockage
+- Les jetons de rafraîchissement utilisent la rotation — les anciens jetons sont invalidés lors du rafraîchissement
+- La révocation des jetons est suivie dans Redis pour une invalidation immédiate
 
-### Anonymous Identity
+### Identité anonyme
 
-- No email, no phone, no password
-- Users register with only a `nickname` + ECDH `publicKey`
-- A `deviceFingerprint` provides weak device binding
-- Identity is ephemeral by design
+- Pas d'e-mail, pas de téléphone, pas de mot de passe
+- Les utilisateurs s'inscrivent avec seulement un `nickname` + une `publicKey` ECDH
+- Un `deviceFingerprint` fournit une liaison faible à l'appareil
+- L'identité est éphémère par conception
 
 ---
 
-## Server-Side Security Guards
+## Gardes de sécurité côté serveur
 
-### Layered Defense
+### Défense en couches
 
 ```
-Incoming Request
+Requête entrante
         │
         ▼
 ┌────────────────────┐
-│  Network Guard      │  Auto-blocks IPs after repeated violations
+│  Garde réseau       │  Blocage auto des IP après violations répétées
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  Helmet             │  Security headers (CSP, HSTS, X-Frame, etc.)
+│  Helmet             │  En-têtes de sécurité (CSP, HSTS, X-Frame, etc.)
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  Rate Limiter       │  Global: 100 req/15min, Auth: 10 req/15min
+│  Limiteur de débit  │  Global : 100 req/15min, Auth : 10 req/15min
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  Input Guard        │  NUL byte stripping, Zod schema validation
+│  Garde d'entrée     │  Suppression octets NUL, validation schéma Zod
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  Integrity Guard    │  Content-Type validation, malformed rejection
+│  Garde d'intégrité  │  Validation Content-Type, rejet des malformés
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  Session Guard      │  Per-user request rate detection
+│  Garde de session   │  Détection du taux de requêtes par utilisateur
 └────────┬───────────┘
         │
         ▼
 ┌────────────────────┐
-│  JWT Auth           │  Token verification, user extraction
+│  Auth JWT           │  Vérification du jeton, extraction de l'utilisateur
 └────────┬───────────┘
         │
         ▼
-  Route Handler
+  Gestionnaire de route
 ```
 
-### Socket.IO Security
+### Sécurité Socket.IO
 
-| Guard                 | Purpose                                      |
-|-----------------------|----------------------------------------------|
-| JWT Socket Auth       | Validates JWT on connection handshake          |
-| Socket Rate Limiter   | Limits events per user per time window         |
-| Event Validation      | Validates event payloads via Zod schemas       |
-
----
-
-## Security Monitor
-
-The server includes an automated security monitor that:
-
-1. **Tracks violations** per IP address
-2. **Auto-blocks** IPs exceeding violation thresholds
-3. **Logs security events** with severity levels
-4. **Reports metrics** via health endpoints (dev mode only)
+| Garde                    | Objectif                                           |
+|--------------------------|-----------------------------------------------------|
+| Auth Socket JWT          | Valide le JWT lors du handshake de connexion         |
+| Limiteur de débit Socket | Limite les événements par utilisateur par fenêtre de temps |
+| Validation d'événements  | Valide les payloads des événements via les schémas Zod |
 
 ---
 
-## Zero-Knowledge Properties
+## Moniteur de sécurité
 
-| Property                           | Status |
-|-------------------------------------|--------|
-| Server cannot read messages          | ✅      |
-| Server cannot read private keys      | ✅      |
-| Server cannot forge messages         | ✅      |
-| Server cannot identify conversation content | ✅ |
-| Server can see metadata (who talks to whom) | ⚠️ |
-| Server can see message timing        | ⚠️      |
-| Server can see message size          | ⚠️      |
+Le serveur inclut un moniteur de sécurité automatisé qui :
 
-### Metadata Considerations
-
-While message *content* is fully encrypted, the server can observe:
-- Conversation participants
-- Message timestamps
-- Message frequency
-- Approximate message sizes
-
-These are inherent trade-offs in a server-relay architecture. Future enhancements like onion routing or constant-rate padding could mitigate these.
+1. **Suit les violations** par adresse IP
+2. **Bloque automatiquement** les IP dépassant les seuils de violations
+3. **Journalise les événements de sécurité** avec des niveaux de gravité
+4. **Rapporte les métriques** via les endpoints de santé (mode dev uniquement)
 
 ---
 
-## Recommendations for Production
+## Propriétés de connaissance nulle
 
-1. **Always use HTTPS/WSS** in production
-2. **Set strong JWT secrets** (≥ 32 random bytes)
-3. **Enable MongoDB authentication** with strong credentials
-4. **Enable Redis AUTH** with a strong password
-5. **Review CORS origins** — restrict to your domain only
-6. **Enable rate limiting** at the reverse proxy level (e.g., Nginx, Cloudflare)
-7. **Monitor security logs** for anomalous patterns
-8. **Rotate JWT secrets** periodically
-9. **Keep dependencies updated** for security patches
-10. **Use network firewalls** to restrict database access to the server only
+| Propriété                                       | Statut |
+|-------------------------------------------------|--------|
+| Le serveur ne peut pas lire les messages         | ✅      |
+| Le serveur ne peut pas lire les clés privées     | ✅      |
+| Le serveur ne peut pas falsifier les messages    | ✅      |
+| Le serveur ne peut pas identifier le contenu des conversations | ✅ |
+| Le serveur peut voir les métadonnées (qui parle à qui) | ⚠️ |
+| Le serveur peut voir l'horodatage des messages   | ⚠️      |
+| Le serveur peut voir la taille des messages      | ⚠️      |
+
+### Considérations sur les métadonnées
+
+Bien que le *contenu* des messages soit entièrement chiffré, le serveur peut observer :
+- Les participants aux conversations
+- Les horodatages des messages
+- La fréquence des messages
+- La taille approximative des messages
+
+Ce sont des compromis inhérents à une architecture à relais serveur. Des améliorations futures comme le routage en oignon ou le rembourrage à taux constant pourraient atténuer ces problèmes.
+
+---
+
+## Recommandations pour la production
+
+1. **Toujours utiliser HTTPS/WSS** en production
+2. **Définir des secrets JWT robustes** (≥ 32 octets aléatoires)
+3. **Activer l'authentification MongoDB** avec des identifiants forts
+4. **Activer Redis AUTH** avec un mot de passe fort
+5. **Vérifier les origines CORS** — restreindre à votre domaine uniquement
+6. **Activer la limitation de débit** au niveau du proxy inverse (ex. : Nginx, Cloudflare)
+7. **Surveiller les journaux de sécurité** pour détecter les schémas anormaux
+8. **Effectuer la rotation des secrets JWT** périodiquement
+9. **Maintenir les dépendances à jour** pour les correctifs de sécurité
+10. **Utiliser des pare-feu réseau** pour restreindre l'accès aux bases de données au serveur uniquement

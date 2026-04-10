@@ -31,7 +31,7 @@ router.get(
       });
 
       if (!conversation) {
-        next(createError("Conversation not found or access denied", 404));
+        next(createError("Conversation introuvable ou accès refusé", 404));
         return;
       }
 

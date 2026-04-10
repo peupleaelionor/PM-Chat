@@ -1,87 +1,87 @@
-# Contributing to PM-Chat
+# Contribuer à PM-Chat
 
-Thank you for your interest in contributing to PM-Chat! This document provides guidelines and best practices for contributing.
-
----
-
-## Getting Started
-
-1. **Fork** the repository
-2. **Clone** your fork locally
-3. **Install** dependencies: `npm install`
-4. **Create a branch**: `git checkout -b feature/your-feature-name`
-5. **Make changes** and commit
-6. **Push** to your fork and open a Pull Request
+Merci de votre intérêt pour contribuer à PM-Chat ! Ce document fournit les directives et bonnes pratiques pour contribuer.
 
 ---
 
-## Development Setup
+## Pour commencer
+
+1. **Forkez** le dépôt
+2. **Clonez** votre fork localement
+3. **Installez** les dépendances : `npm install`
+4. **Créez une branche** : `git checkout -b feature/your-feature-name`
+5. **Effectuez vos modifications** et committez
+6. **Poussez** vers votre fork et ouvrez une Pull Request
+
+---
+
+## Configuration du développement
 
 ```bash
-# Install
+# Installation
 npm install
 
-# Copy environment files
+# Copier les fichiers d'environnement
 cp .env.example .env
 cp apps/server/.env.example apps/server/.env
 
-# Start databases
+# Démarrer les bases de données
 docker compose up mongodb redis -d
 
-# Start dev servers
+# Démarrer les serveurs de développement
 npm run dev
 ```
 
 ---
 
-## Code Guidelines
+## Conventions de code
 
-### General
+### Général
 
-- Write TypeScript — no `any` types unless absolutely necessary
-- Follow existing code style and patterns
-- Keep functions small and focused
-- Add comments for complex logic only
+- Écrivez en TypeScript — pas de types `any` sauf en cas de nécessité absolue
+- Suivez le style et les patterns de code existants
+- Gardez les fonctions courtes et ciblées
+- Ajoutez des commentaires uniquement pour la logique complexe
 
-### Crypto Code
+### Code cryptographique
 
-- **Never** log plaintext messages, private keys, or shared secrets
-- **Never** store private keys in `localStorage`
-- **Always** use `crypto.getRandomValues()` for random data
-- **Always** use non-extractable keys where possible
-- Keep crypto code isolated from UI code in `apps/web/src/lib/crypto/`
+- **Ne jamais** journaliser les messages en clair, les clés privées ou les secrets partagés
+- **Ne jamais** stocker les clés privées dans `localStorage`
+- **Toujours** utiliser `crypto.getRandomValues()` pour les données aléatoires
+- **Toujours** utiliser des clés non extractibles lorsque c'est possible
+- Garder le code crypto isolé du code UI dans `apps/web/src/lib/crypto/`
 
-### Security
+### Sécurité
 
-- Validate all inputs with Zod schemas
-- Never trust client-provided data on the server
-- Use parameterized queries (Mongoose handles this)
-- Follow the existing security guard patterns
-- Test edge cases and failure modes
+- Valider toutes les entrées avec les schémas Zod
+- Ne jamais faire confiance aux données fournies par le client côté serveur
+- Utiliser des requêtes paramétrées (Mongoose gère cela)
+- Suivre les patterns de gardes de sécurité existants
+- Tester les cas limites et les modes d'échec
 
-### Testing
+### Tests
 
-- Add tests for any new crypto functions
-- Add tests for new validation schemas
-- Test both success and failure paths
-- Run the full test suite before submitting: `npm run test`
-
----
-
-## Pull Request Process
-
-1. Ensure your changes pass all existing tests: `npm run test`
-2. Ensure your changes lint cleanly: `npm run lint`
-3. Ensure your changes build: `npm run build`
-4. Update documentation if your change affects the API or architecture
-5. Write a clear PR description explaining what and why
-6. Link any related issues
+- Ajouter des tests pour toute nouvelle fonction cryptographique
+- Ajouter des tests pour les nouveaux schémas de validation
+- Tester les chemins de succès et d'échec
+- Lancer la suite de tests complète avant de soumettre : `npm run test`
 
 ---
 
-## Commit Messages
+## Processus de Pull Request
 
-Use clear, descriptive commit messages:
+1. Assurez-vous que vos modifications passent tous les tests existants : `npm run test`
+2. Assurez-vous que vos modifications passent le lint sans erreur : `npm run lint`
+3. Assurez-vous que vos modifications compilent : `npm run build`
+4. Mettez à jour la documentation si vos modifications affectent l'API ou l'architecture
+5. Rédigez une description de PR claire expliquant le quoi et le pourquoi
+6. Liez les issues associées
+
+---
+
+## Messages de commit
+
+Utilisez des messages de commit clairs et descriptifs :
 
 ```
 feat: add group conversation support
@@ -93,16 +93,16 @@ refactor: simplify key derivation flow
 
 ---
 
-## Reporting Issues
+## Signaler des problèmes
 
-- Use GitHub Issues
-- Include steps to reproduce
-- Include expected vs actual behavior
-- Include environment details (Node.js version, browser, OS)
-- **Never** include private keys, tokens, or message content in bug reports
+- Utilisez les GitHub Issues
+- Incluez les étapes pour reproduire le problème
+- Incluez le comportement attendu vs le comportement réel
+- Incluez les détails de l'environnement (version de Node.js, navigateur, OS)
+- **Ne jamais** inclure de clés privées, de tokens ou de contenu de messages dans les rapports de bugs
 
 ---
 
-## Code of Conduct
+## Code de conduite
 
-Be respectful, constructive, and professional. We are building privacy tools — our community should reflect the values of trust and integrity.
+Soyez respectueux, constructif et professionnel. Nous construisons des outils de protection de la vie privée — notre communauté doit refléter les valeurs de confiance et d'intégrité.

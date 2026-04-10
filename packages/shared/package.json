@@ -1,7 +1,7 @@
 {
   "name": "@pm-chat/shared",
   "version": "1.0.0",
-  "description": "Shared TypeScript types and validators for PM-Chat",
+  "description": "Types TypeScript et validateurs partagés pour PM-Chat",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist"],

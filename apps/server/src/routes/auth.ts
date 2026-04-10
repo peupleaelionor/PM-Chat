@@ -104,7 +104,7 @@ router.post(
 
       // Validate that userId is a well-formed ObjectId before querying
       if (!Types.ObjectId.isValid(userId)) {
-        res.status(401).json({ error: "Invalid credentials" });
+        res.status(401).json({ error: "Identifiants invalides" });
         return;
       }
 
@@ -112,13 +112,13 @@ router.post(
       const user = await User.findById(new Types.ObjectId(userId)).select("+passwordHash");
 
       if (!user || !user.passwordHash) {
-        res.status(401).json({ error: "Invalid credentials" });
+        res.status(401).json({ error: "Identifiants invalides" });
         return;
       }
 
       const valid = await bcrypt.compare(password, user.passwordHash);
       if (!valid) {
-        res.status(401).json({ error: "Invalid credentials" });
+        res.status(401).json({ error: "Identifiants invalides" });
         return;
       }
 
@@ -149,18 +149,18 @@ router.post(
       try {
         payload = verifyToken(refreshToken);
       } catch {
-        res.status(401).json({ error: "Invalid or expired refresh token" });
+        res.status(401).json({ error: "Token de rafraîchissement invalide ou expiré" });
         return;
       }
 
       if (payload.type !== "refresh") {
-        res.status(401).json({ error: "Invalid token type" });
+        res.status(401).json({ error: "Type de token invalide" });
         return;
       }
 
       const valid = await isRefreshTokenValid(payload.sub, payload.jti);
       if (!valid) {
-        res.status(401).json({ error: "Refresh token has been revoked" });
+        res.status(401).json({ error: "Le token de rafraîchissement a été révoqué" });
         return;
       }
 
@@ -203,7 +203,7 @@ router.post(
       }
 
       logger.info("User logged out", { userId: req.userId });
-      res.json({ message: "Logged out successfully" });
+      res.json({ message: "Déconnexion réussie" });
     } catch (err) {
       next(err);
     }
@@ -221,7 +221,7 @@ router.get(
     try {
       const user = await User.findById(req.userId);
       if (!user) {
-        next(createError("User not found", 404));
+        next(createError("Utilisateur non trouvé", 404));
         return;
       }
       res.json(user);

@@ -29,7 +29,7 @@ export function errorHandler(
   const message =
     statusCode < 500 || !config.isProduction
       ? err.message
-      : "Internal server error";
+      : "Erreur interne du serveur";
 
   res.status(statusCode).json({ error: message });
 }

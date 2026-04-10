@@ -13,7 +13,7 @@ export function OnlineStatus({ isOnline, className }: OnlineStatusProps) {
         isOnline ? 'bg-green-500' : 'bg-text-muted',
         className
       )}
-      aria-label={isOnline ? 'Online' : 'Offline'}
+      aria-label={isOnline ? 'En ligne' : 'Hors ligne'}
     />
   );
 }
