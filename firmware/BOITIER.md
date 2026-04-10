@@ -1,16 +1,16 @@
-# PM-Chat Mesh — Boîtier Design Specification
+# PM-Chat Mesh — Spécification de conception du boîtier
 
-Compact pager-like enclosure for the PM-Chat LoRa mesh device.
+Boîtier compact de type bipeur pour l'appareil mesh LoRa PM-Chat.
 
 ---
 
-## Design Philosophy
+## Philosophie de conception
 
-- **Clean industrial look** — no decorative elements
-- **Premium matte finish** — dark grey or black
-- **One-hand operation** — comfortable grip
-- **3D-printable** — FDM or SLA, no support structures needed
-- **Tool-free assembly** — snap-fit or 2-screw closure
+- **Aspect industriel épuré** — aucun élément décoratif
+- **Finition mate haut de gamme** — gris foncé ou noir
+- **Utilisation à une main** — prise en main confortable
+- **Imprimable en 3D** — FDM ou SLA, aucune structure de support nécessaire
+- **Assemblage sans outil** — fermeture par clips ou 2 vis
 
 ---
 
@@ -26,270 +26,272 @@ Compact pager-like enclosure for the PM-Chat LoRa mesh device.
 └──────────────────────────────────────┘
 ```
 
-| Dimension | Value |
-|-----------|-------|
-| Length | 85 mm |
-| Width | 50 mm |
-| Height | 18 mm |
-| Wall thickness | 1.6 mm |
-| Corner radius | 3 mm |
-| Weight (empty) | ~30g (PLA/PETG) |
+| Dimension | Valeur |
+|-----------|--------|
+| Longueur | 85 mm |
+| Largeur | 50 mm |
+| Hauteur | 18 mm |
+| Épaisseur de paroi | 1.6 mm |
+| Rayon d'angle | 3 mm |
+| Poids (à vide) | ~30g (PLA/PETG) |
 
 ---
 
-## Front Face Layout
+## Disposition de la face avant
 
 ```
   ┌──────────────────────────────────────────┐
   │                                          │
   │   ┌────────────────────────────────┐     │
   │   │                                │     │
-  │   │       OLED WINDOW              │     │
-  │   │       (30 × 14 mm cutout)      │     │
+  │   │       FENÊTRE OLED             │     │
+  │   │       (découpe 30 × 14 mm)     │     │
   │   │                                │     │
   │   └────────────────────────────────┘     │
   │                                          │
   │                                          │
   │                                          │
   │      [  ▲  ]    [  ●  ]    [  ▼  ]      │
-  │       UP          OK         DOWN        │
+  │       HAUT        OK         BAS         │
   │                                          │
   │   ○ LED                                  │
   └──────────────────────────────────────────┘
 ```
 
-### OLED Window
-- **Cutout:** 30 × 14 mm (centered horizontally)
-- **Position:** 8 mm from top edge
-- **Bezel:** 0.5 mm lip around display
-- **Protection:** Optional clear acrylic/polycarbonate window (1mm thick)
+### Fenêtre OLED
+- **Découpe :** 30 × 14 mm (centrée horizontalement)
+- **Position :** 8 mm du bord supérieur
+- **Bordure :** rebord de 0,5 mm autour de l'écran
+- **Protection :** fenêtre optionnelle en acrylique/polycarbonate transparent (1mm d'épaisseur)
 
-### Buttons
-- **Layout:** 3 buttons in a row, centered horizontally
-- **Spacing:** 14 mm center-to-center
-- **Position:** 12 mm from bottom edge
-- **Cutout:** 7 × 7 mm square holes for 6×6mm tactile switches
-- **Cap:** Optional 3D-printed button caps (8 × 8 × 3 mm)
+### Boutons
+- **Disposition :** 3 boutons en ligne, centrés horizontalement
+- **Espacement :** 14 mm de centre à centre
+- **Position :** 12 mm du bord inférieur
+- **Découpe :** trous carrés de 7 × 7 mm pour interrupteurs tactiles 6×6mm
+- **Capuchon :** capuchons de bouton optionnels imprimés en 3D (8 × 8 × 3 mm)
 
 ### LED
-- **Position:** Bottom-left corner, 4 mm from edges
-- **Cutout:** 3 mm diameter hole
+- **Position :** coin inférieur gauche, 4 mm des bords
+- **Découpe :** trou de 3 mm de diamètre
 
 ---
 
-## Side Views
+## Vues latérales
 
-### Right Side (Antenna)
+### Côté droit (antenne)
 
 ```
   ┌──────────────────┐
   │                  │
-  │    SMA Hole      │  ← 6.5 mm diameter for SMA connector
-  │    (centered)    │
+  │    Trou SMA      │  ← 6,5 mm de diamètre pour connecteur SMA
+  │    (centré)      │
   │                  │
   └──────────────────┘
 ```
 
-### Bottom Side (USB-C)
+### Côté inférieur (USB-C)
 
 ```
   ┌──────────────────┐
   │                  │
-  │   USB-C Slot     │  ← 12 × 7 mm cutout
-  │   (centered)     │
+  │   Fente USB-C    │  ← découpe 12 × 7 mm
+  │   (centré)       │
   │                  │
   └──────────────────┘
 ```
 
-### Left Side (Clean)
+### Côté gauche (lisse)
 
-No cutouts. Clean surface.
+Aucune découpe. Surface lisse.
 
-### Top Side (Optional)
+### Côté supérieur (optionnel)
 
-Optional reset pinhole (1.5 mm diameter) for factory reset access.
+Trou d'accès optionnel pour réinitialisation (1,5 mm de diamètre) pour accès à la réinitialisation usine.
 
 ---
 
-## Internal Layout (Cross-Section)
+## Disposition interne (coupe transversale)
 
 ```
   ┌──────────────────────────────────────────┐
-  │  FRONT SHELL (top)                       │
+  │  COQUE AVANT (haut)                      │
   │  ┌────────────────────────────────────┐  │
-  │  │  OLED Display (secured with foam)  │  │
+  │  │  Écran OLED (fixé avec de la       │  │
+  │  │  mousse)                           │  │
   │  └────────────────────────────────────┘  │
   │  ┌────────────────────────────────────┐  │
-  │  │  RAK3172-E PCB                     │  │
-  │  │  (mounted on standoffs, 3mm)       │  │
+  │  │  PCB RAK3172-E                     │  │
+  │  │  (monté sur entretoises, 3mm)      │  │
   │  └────────────────────────────────────┘  │
   │  ┌────────────────────────────────────┐  │
-  │  │  LiPo Battery                      │  │
-  │  │  (secured with double-sided tape)  │  │
+  │  │  Batterie LiPo                     │  │
+  │  │  (fixée avec du ruban adhésif      │  │
+  │  │  double face)                      │  │
   │  └────────────────────────────────────┘  │
   │  ┌────────────────────────────────────┐  │
-  │  │  TP4056 Charger Module             │  │
+  │  │  Module chargeur TP4056            │  │
   │  └────────────────────────────────────┘  │
-  │  BACK SHELL (bottom)                     │
+  │  COQUE ARRIÈRE (bas)                     │
   └──────────────────────────────────────────┘
 ```
 
-### Component Stacking (top to bottom)
-1. **OLED display** — flush with front window
-2. **Button PCB or direct buttons** — aligned with front cutouts
-3. **RAK3172-E EVB** — mounted on 3mm standoffs
-4. **LiPo battery** — flat pack, secured with foam tape
-5. **TP4056 module** — USB-C aligned with bottom cutout
+### Empilement des composants (de haut en bas)
+1. **Écran OLED** — affleurant avec la fenêtre avant
+2. **PCB des boutons ou boutons directs** — alignés avec les découpes avant
+3. **RAK3172-E EVB** — monté sur des entretoises de 3mm
+4. **Batterie LiPo** — format plat, fixée avec du ruban mousse
+5. **Module TP4056** — USB-C aligné avec la découpe inférieure
 
 ---
 
-## Assembly
+## Assemblage
 
-### Two-Part Shell
+### Coque en deux parties
 
-The enclosure consists of two parts:
+Le boîtier se compose de deux parties :
 
-1. **Front shell** — Contains OLED window, button holes, LED hole
-2. **Back shell** — Contains battery compartment, USB-C slot, antenna hole
+1. **Coque avant** — contient la fenêtre OLED, les trous des boutons, le trou de la LED
+2. **Coque arrière** — contient le compartiment batterie, la fente USB-C, le trou d'antenne
 
-### Closure Options
+### Options de fermeture
 
-**Option A: Snap-fit (preferred)**
-- 4 snap-fit clips on back shell
-- Tool-free open/close
-- Add 0.2mm tolerance for FDM printing
+**Option A : Clips (préférée)**
+- 4 clips sur la coque arrière
+- Ouverture/fermeture sans outil
+- Ajouter une tolérance de 0,2mm pour l'impression FDM
 
-**Option B: Screw closure**
-- 2× M2 screws at corners
-- Brass heat-set inserts in front shell
-- More secure, slightly harder to open
-
----
-
-## 3D Printing Guidelines
-
-### Material
-| Material | Pros | Cons |
-|----------|------|------|
-| **PETG** (recommended) | Strong, slight flex, heat resistant | Slightly harder to print |
-| **PLA** | Easy to print, good detail | Brittle, low heat resistance |
-| **ABS** | Strong, heat resistant | Warping, ventilation needed |
-
-### Print Settings
-| Setting | Value |
-|---------|-------|
-| Layer height | 0.2 mm |
-| Infill | 20% |
-| Walls | 3 perimeters |
-| Top/bottom layers | 4 |
-| Supports | None needed (design is support-free) |
-| Orientation | Print shells face-down |
-
-### Post-Processing
-1. **Light sanding** (220-400 grit) for smooth finish
-2. **Matte spray paint** (optional) — dark grey or black
-3. **Clear coat** (optional) — for durability
+**Option B : Fermeture à vis**
+- 2× vis M2 aux coins
+- Inserts filetés en laiton dans la coque avant
+- Plus sécurisée, légèrement plus difficile à ouvrir
 
 ---
 
-## Antenna Integration
+## Recommandations d'impression 3D
 
-### Option A: External SMA
-- SMA bulkhead connector through right side wall
-- Most flexible, standard 868 MHz antenna
-- **Cutout:** 6.5 mm hole + 2 flat edges for wrench
+### Matériau
+| Matériau | Avantages | Inconvénients |
+|----------|-----------|---------------|
+| **PETG** (recommandé) | Solide, légèrement flexible, résistant à la chaleur | Légèrement plus difficile à imprimer |
+| **PLA** | Facile à imprimer, bon niveau de détail | Fragile, faible résistance à la chaleur |
+| **ABS** | Solide, résistant à la chaleur | Gauchissement, ventilation nécessaire |
 
-### Option B: Internal PCB Antenna
-- Glue a small 868 MHz PCB antenna inside the case
-- Cleaner look, slightly reduced range
-- **Note:** Ensure no metal near the antenna
+### Paramètres d'impression
+| Paramètre | Valeur |
+|-----------|--------|
+| Hauteur de couche | 0.2 mm |
+| Remplissage | 20% |
+| Parois | 3 périmètres |
+| Couches dessus/dessous | 4 |
+| Supports | Aucun nécessaire (conception sans support) |
+| Orientation | Imprimer les coques face vers le bas |
 
-### Option C: Wire Antenna
-- Simple 86.3 mm wire (quarter-wave at 868 MHz)
-- Route through a small hole in the top
-- Cheapest option, good performance
+### Post-traitement
+1. **Ponçage léger** (grain 220-400) pour une finition lisse
+2. **Peinture en spray mate** (optionnel) — gris foncé ou noir
+3. **Vernis de protection** (optionnel) — pour la durabilité
 
 ---
 
-## Ergonomics
+## Intégration de l'antenne
+
+### Option A : SMA externe
+- Connecteur SMA traversant à travers la paroi latérale droite
+- Le plus flexible, antenne standard 868 MHz
+- **Découpe :** trou de 6,5 mm + 2 méplats pour clé
+
+### Option B : Antenne PCB interne
+- Coller une petite antenne PCB 868 MHz à l'intérieur du boîtier
+- Aspect plus propre, portée légèrement réduite
+- **Note :** s'assurer qu'aucun métal ne se trouve près de l'antenne
+
+### Option C : Antenne filaire
+- Simple fil de 86,3 mm (quart d'onde à 868 MHz)
+- Passer par un petit trou dans le haut
+- Option la moins chère, bonnes performances
+
+---
+
+## Ergonomie
 
 ```
-  One-hand grip:
+  Prise à une main :
   
   ┌────────────┐
-  │  ┌──────┐  │  ← OLED visible at glance
+  │  ┌──────┐  │  ← OLED visible d'un coup d'œil
   │  │ OLED │  │
   │  └──────┘  │
   │            │
-  │  [▲][●][▼] │  ← Thumb reaches all 3 buttons
+  │  [▲][●][▼] │  ← Le pouce atteint les 3 boutons
   │            │
   └─────┬──────┘
         │
-     ───┘  (held like a pager)
+     ───┘  (tenu comme un bipeur)
 ```
 
-- Device is held in one hand (portrait orientation)
-- Thumb naturally rests on the button row
-- OLED is readable at arm's length
-- Antenna points away from hand (top or right side)
+- L'appareil se tient à une main (orientation portrait)
+- Le pouce repose naturellement sur la rangée de boutons
+- L'écran OLED est lisible à bout de bras
+- L'antenne pointe à l'opposé de la main (côté supérieur ou droit)
 
 ---
 
-## Variants
+## Variantes
 
-### Minimal (Basic)
-- No LED
-- Wire antenna (through hole)
-- Friction-fit battery
-- Simplest possible build
+### Minimale (basique)
+- Pas de LED
+- Antenne filaire (à travers un trou)
+- Batterie maintenue par friction
+- Construction la plus simple possible
 
-### Standard (Recommended)
-- LED indicator
-- SMA antenna connector
-- Foam-taped battery
-- Snap-fit closure
-- Button caps
+### Standard (recommandée)
+- Indicateur LED
+- Connecteur d'antenne SMA
+- Batterie fixée avec du ruban mousse
+- Fermeture par clips
+- Capuchons de bouton
 
 ### Premium
-- Clear OLED window (laser-cut acrylic)
-- Custom PCB integrating all components
-- Engraved logo
-- Brass inserts for screws
-- Spray-painted matte finish
+- Fenêtre OLED transparente (acrylique découpée au laser)
+- PCB personnalisé intégrant tous les composants
+- Logo gravé
+- Inserts en laiton pour les vis
+- Finition mate peinte au spray
 
 ---
 
-## Technical Drawings Reference
+## Référence des dessins techniques
 
-For 3D modeling, use these key dimensions:
+Pour la modélisation 3D, utiliser ces dimensions clés :
 
-| Feature | X (mm) | Y (mm) | Z (mm) |
+| Élément | X (mm) | Y (mm) | Z (mm) |
 |---------|--------|--------|--------|
-| OLED cutout | 10 | 8 | — |
-| OLED size | 30 × 14 | — | 1 mm depth |
-| Button 1 center | 18 | 65 | — |
-| Button 2 center | 32 | 65 | — |
-| Button 3 center | 46 | 65 | — |
-| Button hole size | 7 × 7 | — | through |
-| LED hole | 6 | 73 | — |
-| LED diameter | 3 | — | through |
-| SMA hole (right) | — | 35 | centered |
-| SMA diameter | 6.5 | — | through |
-| USB-C slot (bottom) | centered | — | 12 × 7 |
-| Standoff positions | 8,8 / 42,8 / 8,60 / 42,60 | — | 3mm height |
+| Découpe OLED | 10 | 8 | — |
+| Taille OLED | 30 × 14 | — | 1 mm de profondeur |
+| Centre du bouton 1 | 18 | 65 | — |
+| Centre du bouton 2 | 32 | 65 | — |
+| Centre du bouton 3 | 46 | 65 | — |
+| Taille du trou de bouton | 7 × 7 | — | traversant |
+| Trou LED | 6 | 73 | — |
+| Diamètre LED | 3 | — | traversant |
+| Trou SMA (droite) | — | 35 | centré |
+| Diamètre SMA | 6.5 | — | traversant |
+| Fente USB-C (bas) | centré | — | 12 × 7 |
+| Positions des entretoises | 8,8 / 42,8 / 8,60 / 42,60 | — | hauteur 3mm |
 
-All coordinates from bottom-left of front face.
+Toutes les coordonnées partent du coin inférieur gauche de la face avant.
 
 ---
 
-## Final Checklist
+## Liste de vérification finale
 
-- [ ] OLED window aligns with display
-- [ ] All 3 buttons are accessible and click firmly
-- [ ] USB-C port is reachable for charging
-- [ ] Antenna connector (or wire) properly positioned
-- [ ] Battery fits without pressure on PCB
-- [ ] Shell closes cleanly (no gaps > 0.5mm)
-- [ ] LED is visible from outside
-- [ ] No rattling when shaken
-- [ ] Comfortable one-hand hold
+- [ ] La fenêtre OLED est alignée avec l'écran
+- [ ] Les 3 boutons sont accessibles et cliquent fermement
+- [ ] Le port USB-C est accessible pour la recharge
+- [ ] Le connecteur d'antenne (ou le fil) est correctement positionné
+- [ ] La batterie tient sans exercer de pression sur le PCB
+- [ ] La coque se ferme proprement (pas d'espace > 0,5mm)
+- [ ] La LED est visible de l'extérieur
+- [ ] Pas de cliquetis quand on secoue l'appareil
+- [ ] Prise en main confortable à une main

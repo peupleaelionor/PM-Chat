@@ -1,107 +1,107 @@
-# PM-Chat Mesh Firmware
+# Firmware Mesh PM-Chat
 
-Offline encrypted LoRa mesh messaging firmware for **RAK3172-E Evaluation Board EU868**.
+Firmware de messagerie mesh LoRa chiffrée hors ligne pour **RAK3172-E Evaluation Board EU868**.
 
-No WiFi. No Internet. No GPS. No cloud. Pure device-to-device encrypted messaging over LoRa.
-
----
-
-## Features
-
-| Feature | Details |
-|---------|---------|
-| **LoRa Mesh** | Multi-hop relay with TTL and deduplication |
-| **Encryption** | AES-256-GCM with per-message nonce |
-| **OLED UI** | 128×64 SSD1306, 12+ screens, 3-button navigation |
-| **Security** | Hardware RNG, encrypted storage, panic wipe |
-| **Battery** | LiPo monitoring with low/critical alerts |
-| **Watchdog** | 8-second independent watchdog for crash recovery |
-| **Offline** | Zero network dependencies, fully autonomous |
+Pas de WiFi. Pas d'Internet. Pas de GPS. Pas de cloud. Messagerie chiffrée pure d'appareil à appareil via LoRa.
 
 ---
 
-## Hardware Requirements
+## Fonctionnalités
+
+| Fonctionnalité | Détails |
+|----------------|---------|
+| **LoRa Mesh** | Relais multi-sauts avec TTL et déduplication |
+| **Chiffrement** | AES-256-GCM avec nonce par message |
+| **Interface OLED** | 128×64 SSD1306, 12+ écrans, navigation à 3 boutons |
+| **Sécurité** | RNG matériel, stockage chiffré, effacement d'urgence |
+| **Batterie** | Surveillance LiPo avec alertes basse/critique |
+| **Watchdog** | Watchdog indépendant de 8 secondes pour récupération après plantage |
+| **Hors ligne** | Zéro dépendance réseau, entièrement autonome |
+
+---
+
+## Matériel requis
 
 - **RAK3172-E** Evaluation Board (STM32WLE5CC, EU868)
-- **SSD1306** 128×64 OLED display (I2C)
-- **3 tactile buttons** (normally open, active low)
-- **LiPo battery** (3.7V, 1000-2000mAh recommended)
-- **TP4056** or similar USB-C LiPo charger module
-- **Voltage divider** (2× 100kΩ resistors for battery ADC)
-- **LoRa antenna** (868 MHz, SMA or U.FL)
+- **SSD1306** écran OLED 128×64 (I2C)
+- **3 boutons tactiles** (normalement ouverts, actifs à l'état bas)
+- **Batterie LiPo** (3.7V, 1000-2000mAh recommandé)
+- **TP4056** ou module chargeur LiPo USB-C similaire
+- **Diviseur de tension** (2× résistances 100kΩ pour ADC batterie)
+- **Antenne LoRa** (868 MHz, SMA ou U.FL)
 
-See [WIRING.md](WIRING.md) for complete connection diagram.
+Voir [WIRING.md](WIRING.md) pour le schéma de connexion complet.
 
 ---
 
-## Project Structure
+## Structure du projet
 
 ```
 firmware/
-├── platformio.ini          # Build configuration
+├── platformio.ini          # Configuration de compilation
 ├── include/
-│   ├── config.h            # All constants, types, enums
-│   ├── pins.h              # Hardware pin definitions
-│   ├── packet.h            # Binary packet format
-│   ├── crypto_engine.h     # AES-256-GCM interface
-│   ├── device_identity.h   # Device ID management
-│   ├── radio.h             # LoRa radio abstraction
-│   ├── mesh.h              # Mesh routing engine
-│   ├── message_store.h     # Message storage & queues
-│   ├── storage.h           # EEPROM persistence
-│   ├── button.h            # 3-button handler
-│   ├── battery.h           # Battery monitor
-│   ├── ui.h                # OLED display & all screens
-│   └── state_machine.h     # System state machine
+│   ├── config.h            # Toutes les constantes, types, énumérations
+│   ├── pins.h              # Définitions des broches matérielles
+│   ├── packet.h            # Format binaire des paquets
+│   ├── crypto_engine.h     # Interface AES-256-GCM
+│   ├── device_identity.h   # Gestion de l'identifiant appareil
+│   ├── radio.h             # Abstraction radio LoRa
+│   ├── mesh.h              # Moteur de routage mesh
+│   ├── message_store.h     # Stockage et files de messages
+│   ├── storage.h           # Persistance EEPROM
+│   ├── button.h            # Gestionnaire de 3 boutons
+│   ├── battery.h           # Moniteur de batterie
+│   ├── ui.h                # Affichage OLED et tous les écrans
+│   └── state_machine.h     # Machine à états du système
 ├── src/
-│   ├── main.cpp            # Entry point & main loop
-│   ├── packet.cpp          # Packet encode/decode
-│   ├── crypto_engine.cpp   # AES-GCM + hardware RNG
-│   ├── device_identity.cpp # Identity provisioning
-│   ├── radio.cpp           # RadioLib STM32WLx driver
-│   ├── mesh.cpp            # TTL, dedup, relay logic
-│   ├── message_store.cpp   # In-RAM message management
-│   ├── storage.cpp         # EEPROM read/write
-│   ├── button.cpp          # Debounce & event detection
-│   ├── battery.cpp         # ADC voltage reading
-│   ├── ui.cpp              # U8g2 OLED rendering
-│   └── state_machine.cpp   # FSM transitions & logic
+│   ├── main.cpp            # Point d'entrée et boucle principale
+│   ├── packet.cpp          # Encodage/décodage des paquets
+│   ├── crypto_engine.cpp   # AES-GCM + RNG matériel
+│   ├── device_identity.cpp # Provisionnement de l'identité
+│   ├── radio.cpp           # Pilote RadioLib STM32WLx
+│   ├── mesh.cpp            # TTL, dédup, logique de relais
+│   ├── message_store.cpp   # Gestion des messages en RAM
+│   ├── storage.cpp         # Lecture/écriture EEPROM
+│   ├── button.cpp          # Anti-rebond et détection d'événements
+│   ├── battery.cpp         # Lecture de tension ADC
+│   ├── ui.cpp              # Rendu OLED U8g2
+│   └── state_machine.cpp   # Transitions et logique FSM
 ├── test/
-│   └── test_main.cpp       # Unity test harness
-├── WIRING.md               # Pin map & connections
-└── BOITIER.md              # Enclosure design spec
+│   └── test_main.cpp       # Harnais de test Unity
+├── WIRING.md               # Carte des broches et connexions
+└── BOITIER.md              # Spécification de conception du boîtier
 ```
 
 ---
 
-## Build & Flash
+## Compilation et flashage
 
-### Prerequisites
+### Prérequis
 
-1. Install [PlatformIO](https://platformio.org/install)
-2. Install [ST-LINK](https://www.st.com/en/development-tools/stsw-link009.html) drivers
-3. Connect ST-LINK V2 to RAK3172-E SWD header
+1. Installer [PlatformIO](https://platformio.org/install)
+2. Installer les pilotes [ST-LINK](https://www.st.com/en/development-tools/stsw-link009.html)
+3. Connecter ST-LINK V2 au connecteur SWD du RAK3172-E
 
-### Build
+### Compilation
 
 ```bash
 cd firmware
 pio run -e rak3172
 ```
 
-### Flash
+### Flashage
 
 ```bash
 pio run -e rak3172 --target upload
 ```
 
-### Serial Monitor
+### Moniteur série
 
 ```bash
 pio device monitor --baud 115200
 ```
 
-### Run Tests
+### Exécuter les tests
 
 ```bash
 pio test -e test
@@ -109,7 +109,7 @@ pio test -e test
 
 ---
 
-## First Boot Flow
+## Flux du premier démarrage
 
 ```
 ┌─────────┐     ┌─────────────┐     ┌──────────┐     ┌───────┐
@@ -118,73 +118,73 @@ pio test -e test
 └─────────┘     └─────────────┘     └──────────┘     └───────┘
 ```
 
-1. Device boots, shows splash screen for 1.5 seconds
-2. First boot detected → Setup Welcome screen
-3. User enters a 4-digit **Mesh PIN** (shared with all group members)
-4. Device generates a random Device ID and derives encryption key
-5. Device ID displayed — share with peers
-6. Press OK → Inbox (ready to send/receive)
+1. L'appareil démarre et affiche l'écran de démarrage pendant 1,5 seconde
+2. Premier démarrage détecté → Écran d'accueil de configuration
+3. L'utilisateur saisit un **Mesh PIN** à 4 chiffres (partagé avec tous les membres du groupe)
+4. L'appareil génère un identifiant aléatoire et dérive la clé de chiffrement
+5. L'identifiant de l'appareil est affiché — à partager avec les pairs
+6. Appuyer sur OK → Boîte de réception (prêt à envoyer/recevoir)
 
-### Joining an Existing Mesh
+### Rejoindre un mesh existant
 
-Enter the **same Mesh PIN** on all devices. All devices with the same PIN share the same encryption key and can communicate.
-
----
-
-## Button Controls
-
-| Context | ▲ UP | ● OK | ▼ DOWN |
-|---------|------|------|--------|
-| **General** | Navigate up | Select/confirm | Navigate down |
-| **Hold ▲** | Go back | — | — |
-| **Hold ●** | — | Context action (send, confirm) | — |
-| **Hold ▼** | — | — | Delete character |
-| **All 3 held (3s)** | — | **PANIC WIPE** | — |
+Saisir le **même Mesh PIN** sur tous les appareils. Tous les appareils avec le même PIN partagent la même clé de chiffrement et peuvent communiquer.
 
 ---
 
-## Message Protocol
+## Commandes des boutons
 
-### Packet Format (Binary, Little-Endian)
+| Contexte | ▲ HAUT | ● OK | ▼ BAS |
+|----------|--------|------|-------|
+| **Général** | Naviguer vers le haut | Sélectionner/confirmer | Naviguer vers le bas |
+| **Maintenir ▲** | Retour | — | — |
+| **Maintenir ●** | — | Action contextuelle (envoyer, confirmer) | — |
+| **Maintenir ▼** | — | — | Supprimer un caractère |
+| **3 boutons maintenus (3s)** | — | **EFFACEMENT D'URGENCE** | — |
+
+---
+
+## Protocole de messagerie
+
+### Format des paquets (binaire, Little-Endian)
 
 ```
 Offset  Size   Field          Description
 ──────  ────   ─────          ───────────
-0       1      version        Protocol version (0x01)
+0       1      version        Version du protocole (0x01)
 1       1      type           PKT_TEXT/ACK/PING/PAIR_REQ/PAIR_ACK
-2       4      sender_id      Source device ID
-6       4      dest_id        Destination (0xFFFFFFFF = broadcast)
-10      4      msg_id         Unique message identifier
-14      1      ttl            Hops remaining (default: 3, max: 7)
-15      1      flags          Bitmask: burn|ack_req|relayed|priority|encrypted
-16      12     nonce          AES-GCM nonce (random per message)
-28      2      payload_len    Encrypted payload length
-30      N      payload        Encrypted payload (max 200 bytes)
-30+N    16     tag            AES-GCM authentication tag
+2       4      sender_id      Identifiant de l'appareil source
+6       4      dest_id        Destination (0xFFFFFFFF = diffusion)
+10      4      msg_id         Identifiant unique du message
+14      1      ttl            Sauts restants (défaut : 3, max : 7)
+15      1      flags          Masque de bits : burn|ack_req|relayed|priority|encrypted
+16      12     nonce          Nonce AES-GCM (aléatoire par message)
+28      2      payload_len    Longueur du contenu chiffré
+30      N      payload        Contenu chiffré (max 200 octets)
+30+N    16     tag            Tag d'authentification AES-GCM
 ```
 
-**Max packet size:** 246 bytes (fits LoRa 255-byte limit)
+**Taille maximale du paquet :** 246 octets (compatible avec la limite de 255 octets de LoRa)
 
-### Encryption
+### Chiffrement
 
-- **Algorithm:** AES-256-GCM
-- **Key derivation:** SHA-256(mesh_pin + salt)
-- **Nonce:** 12 bytes, hardware RNG, unique per message
-- **AAD:** version + type + sender_id + dest_id + msg_id (14 bytes)
-- **Tag:** 16-byte authentication tag
+- **Algorithme :** AES-256-GCM
+- **Dérivation de clé :** SHA-256(mesh_pin + salt)
+- **Nonce :** 12 octets, RNG matériel, unique par message
+- **AAD :** version + type + sender_id + dest_id + msg_id (14 octets)
+- **Tag :** tag d'authentification de 16 octets
 
-### Mesh Routing
+### Routage mesh
 
-1. Receive packet
-2. Check dedup cache → drop if seen within 60 seconds
-3. If for us → decrypt and store
-4. If broadcast → process AND relay (if TTL > 0)
-5. If for another node → relay (decrement TTL, set RELAYED flag)
-6. Random delay (0-100ms) before relay to avoid collisions
+1. Réception du paquet
+2. Vérification du cache de déduplication → rejet si déjà vu dans les 60 secondes
+3. Si destiné à nous → déchiffrer et stocker
+4. Si diffusion → traiter ET relayer (si TTL > 0)
+5. Si destiné à un autre nœud → relayer (décrémenter TTL, activer le flag RELAYED)
+6. Délai aléatoire (0-100ms) avant relais pour éviter les collisions
 
 ---
 
-## State Machine
+## Machine à états
 
 ```
       ┌──────────────────────────────────────┐
@@ -204,78 +204,78 @@ Offset  Size   Field          Description
       └──── panic ───────────────────────────┘
 ```
 
-**States:** BOOT → SETUP → IDLE → SENDING → RECEIVING → ERROR
+**États :** BOOT → SETUP → IDLE → SENDING → RECEIVING → ERROR
 
 ---
 
-## Security Model
+## Modèle de sécurité
 
-| Property | Implementation |
-|----------|---------------|
-| **Encryption** | AES-256-GCM per message |
-| **Key source** | SHA-256(mesh_pin + salt) |
-| **Random** | STM32 hardware TRNG |
-| **Nonce** | 12 bytes, unique per message |
-| **Replay protection** | Dedup cache (msg_id, 60s window) |
-| **Tamper detection** | GCM auth tag on encrypted + header |
-| **Relay privacy** | Relay nodes cannot decrypt payload |
-| **Panic wipe** | Hold all 3 buttons → erase Flash |
-| **No debug leaks** | Serial output can be disabled |
-| **Key storage** | EEPROM (on-chip Flash, no external) |
-
----
-
-## Factory Reset / Wipe
-
-**Settings → Factory Reset:** Confirm via on-screen prompt. Erases device ID, keys, messages, and all settings. Device reboots into Setup.
-
-**Panic Wipe:** Hold all 3 buttons for 3 seconds. Immediate erase of all data. No confirmation required.
+| Propriété | Implémentation |
+|-----------|----------------|
+| **Chiffrement** | AES-256-GCM par message |
+| **Source de clé** | SHA-256(mesh_pin + salt) |
+| **Aléatoire** | STM32 hardware TRNG |
+| **Nonce** | 12 octets, unique par message |
+| **Protection anti-rejeu** | Cache de déduplication (msg_id, fenêtre de 60s) |
+| **Détection de falsification** | Tag d'authentification GCM sur le contenu chiffré + en-tête |
+| **Confidentialité du relais** | Les nœuds relais ne peuvent pas déchiffrer le contenu |
+| **Effacement d'urgence** | Maintenir les 3 boutons → effacer la Flash |
+| **Pas de fuite de débogage** | La sortie série peut être désactivée |
+| **Stockage des clés** | EEPROM (Flash intégrée, pas de composant externe) |
 
 ---
 
-## LoRa Parameters (EU868)
+## Réinitialisation usine / Effacement
 
-| Parameter | Value |
-|-----------|-------|
-| Frequency | 868.0 MHz |
-| Bandwidth | 125 kHz |
-| Spreading Factor | 9 |
-| Coding Rate | 4/7 |
-| Sync Word | 0x12 (private) |
-| TX Power | 14 dBm |
-| Preamble | 8 symbols |
-| CRC | Enabled |
+**Paramètres → Réinitialisation usine :** Confirmer via l'invite à l'écran. Efface l'identifiant de l'appareil, les clés, les messages et tous les paramètres. L'appareil redémarre en mode Configuration.
 
-**Estimated range:** 2-5 km line of sight, 500m-1km urban.
+**Effacement d'urgence :** Maintenir les 3 boutons pendant 3 secondes. Effacement immédiat de toutes les données. Aucune confirmation requise.
 
 ---
 
-## Memory Budget (STM32WLE5CC: 256KB Flash, 64KB RAM)
+## Paramètres LoRa (EU868)
 
-| Component | RAM Usage |
-|-----------|-----------|
-| U8g2 framebuffer | 1 KB |
-| Message store (32 msgs) | ~8 KB |
-| Dedup cache (64 entries) | 768 B |
-| Packet buffers | 512 B |
-| UI state | ~512 B |
-| Stack | ~4 KB |
+| Paramètre | Valeur |
+|-----------|--------|
+| Fréquence | 868.0 MHz |
+| Bande passante | 125 kHz |
+| Facteur d'étalement | 9 |
+| Taux de codage | 4/7 |
+| Mot de synchronisation | 0x12 (privé) |
+| Puissance TX | 14 dBm |
+| Préambule | 8 symboles |
+| CRC | Activé |
+
+**Portée estimée :** 2-5 km en ligne de vue, 500m-1km en milieu urbain.
+
+---
+
+## Budget mémoire (STM32WLE5CC : 256KB Flash, 64KB RAM)
+
+| Composant | Utilisation RAM |
+|-----------|-----------------|
+| Tampon d'affichage U8g2 | 1 KB |
+| Stockage de messages (32 msgs) | ~8 KB |
+| Cache de déduplication (64 entrées) | 768 B |
+| Tampons de paquets | 512 B |
+| État de l'interface | ~512 B |
+| Pile | ~4 KB |
 | **Total** | **~15 KB / 64 KB** |
 
 ---
 
-## Dependencies
+## Dépendances
 
-| Library | Version | Purpose |
-|---------|---------|---------|
+| Bibliothèque | Version | Utilisation |
+|--------------|---------|-------------|
 | [RadioLib](https://github.com/jgromes/RadioLib) | ^6.6.0 | LoRa via STM32WLx |
-| [U8g2](https://github.com/olikraus/U8g2) | ^2.35.19 | SSD1306 OLED driver |
+| [U8g2](https://github.com/olikraus/U8g2) | ^2.35.19 | Pilote OLED SSD1306 |
 | [Crypto](https://github.com/rweather/arduinolibs) | ^0.4.0 | AES-256-GCM |
 
-All managed automatically by PlatformIO. No external/cloud dependencies.
+Toutes gérées automatiquement par PlatformIO. Aucune dépendance externe ou cloud.
 
 ---
 
-## License
+## Licence
 
-MIT — See [LICENSE](../LICENSE)
+MIT — Voir [LICENSE](../LICENSE)
