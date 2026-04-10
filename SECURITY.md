@@ -1,82 +1,82 @@
-# Security Policy
+# Politique de sécurité
 
-## Supported Versions
+## Versions supportées
 
-| Version | Supported |
+| Version | Supportée |
 |---------|-----------|
 | 1.x     | ✅         |
 
-## Reporting a Vulnerability
+## Signaler une vulnérabilité
 
-If you discover a security vulnerability in PM-Chat, please report it responsibly.
+Si vous découvrez une vulnérabilité de sécurité dans PM-Chat, veuillez la signaler de manière responsable.
 
-### How to Report
+### Comment signaler
 
-1. **Do NOT** open a public GitHub issue for security vulnerabilities
-2. Email: [Create a private security advisory](../../security/advisories/new) on GitHub
-3. Include:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
+1. **N'ouvrez PAS** une issue publique sur GitHub pour les vulnérabilités de sécurité
+2. E-mail : [Créer un avis de sécurité privé](../../security/advisories/new) sur GitHub
+3. Incluez :
+   - Description de la vulnérabilité
+   - Étapes pour reproduire
+   - Impact potentiel
+   - Correctif suggéré (le cas échéant)
 
-### What to Expect
+### À quoi s'attendre
 
-- **Acknowledgment** within 48 hours
-- **Assessment** within 7 days
-- **Fix** within 30 days for confirmed vulnerabilities
-- **Credit** in the release notes (unless you prefer anonymity)
+- **Accusé de réception** sous 48 heures
+- **Évaluation** sous 7 jours
+- **Correctif** sous 30 jours pour les vulnérabilités confirmées
+- **Mention** dans les notes de version (sauf si vous préférez l'anonymat)
 
-## Security Design
+## Conception de la sécurité
 
-PM-Chat is designed with security as a core principle:
+PM-Chat est conçu avec la sécurité comme principe fondamental :
 
-### Encryption
+### Chiffrement
 
-- **ECDH P-256** for key exchange
-- **AES-GCM 256-bit** for message encryption
-- **Random 12-byte IV** per message
-- **16-byte nonce** for replay protection
-- Private keys **never leave the device**
-- Derived keys are **non-extractable**
+- **ECDH P-256** pour l'échange de clés
+- **AES-GCM 256 bits** pour le chiffrement des messages
+- **IV aléatoire de 12 octets** par message
+- **Nonce de 16 octets** pour la protection anti-rejeu
+- Les clés privées **ne quittent jamais l'appareil**
+- Les clés dérivées sont **non extractibles**
 
-### Server Security
+### Sécurité du serveur
 
-- Zero-knowledge architecture — server cannot read messages
-- JWT authentication with short-lived access tokens
-- Token refresh rotation
-- Per-IP rate limiting (REST + Socket.IO)
-- Input validation via Zod schemas
-- NUL byte stripping
-- Content-Type enforcement
-- Helmet security headers
-- Automated IP blocking for repeated violations
-- Security monitoring with anomaly detection
+- Architecture Zero-Knowledge — le serveur ne peut pas lire les messages
+- Authentification JWT avec tokens d'accès à durée de vie courte
+- Rotation des tokens de rafraîchissement
+- Limitation de débit par IP (REST + Socket.IO)
+- Validation des entrées via les schémas Zod
+- Suppression des octets NUL
+- Application stricte du Content-Type
+- En-têtes de sécurité Helmet
+- Blocage automatique des IP en cas de violations répétées
+- Surveillance de la sécurité avec détection d'anomalies
 
-### Known Limitations
+### Limitations connues
 
-These are known trade-offs, not vulnerabilities:
+Il s'agit de compromis connus, pas de vulnérabilités :
 
-1. **No forward secrecy** — compromised private key exposes past messages (planned: Double Ratchet)
-2. **Metadata visible to server** — who communicates with whom, message timing and size
-3. **Session-bound keys** — closing the tab destroys the private key (this is intentional)
-4. **No key fingerprint verification** — trust-on-first-use for public keys (planned: out-of-band verification)
-5. **Single-device** — no multi-device key synchronization yet
+1. **Pas de confidentialité persistante** — une clé privée compromise expose les messages passés (prévu : Double Ratchet)
+2. **Métadonnées visibles par le serveur** — qui communique avec qui, horodatage et taille des messages
+3. **Clés liées à la session** — fermer l'onglet détruit la clé privée (c'est intentionnel)
+4. **Pas de vérification d'empreinte de clé** — confiance au premier usage pour les clés publiques (prévu : vérification hors bande)
+5. **Appareil unique** — pas encore de synchronisation des clés multi-appareils
 
-## Scope
+## Périmètre
 
-The following are **in scope** for security reports:
-- Encryption bypass or weaknesses
-- Authentication bypass
-- Authorization flaws
-- Injection vulnerabilities
-- Information disclosure
-- Rate limiting bypass
-- Replay attack vectors
+Les éléments suivants sont **inclus dans le périmètre** des rapports de sécurité :
+- Contournement ou faiblesses du chiffrement
+- Contournement de l'authentification
+- Failles d'autorisation
+- Vulnérabilités d'injection
+- Divulgation d'informations
+- Contournement de la limitation de débit
+- Vecteurs d'attaque par rejeu
 
-The following are **out of scope**:
-- Denial of service (unless trivially exploitable)
-- Social engineering
-- Physical device access attacks
-- Browser extension interference
-- Issues requiring user action (phishing, etc.)
+Les éléments suivants sont **hors périmètre** :
+- Déni de service (sauf si trivialement exploitable)
+- Ingénierie sociale
+- Attaques par accès physique à l'appareil
+- Interférence d'extensions de navigateur
+- Problèmes nécessitant une action de l'utilisateur (hameçonnage, etc.)
