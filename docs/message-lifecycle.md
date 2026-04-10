@@ -1,183 +1,183 @@
-# Message Lifecycle
+# Cycle de vie d'un message
 
-> This document traces a message from composition to delivery, covering encryption, transmission, storage, decryption, and status tracking.
+> Ce document retrace le parcours d'un message de sa rédaction à sa livraison, couvrant le chiffrement, la transmission, le stockage, le déchiffrement et le suivi de statut.
 
 ---
 
-## Overview
+## Vue d'ensemble
 
 ```
-┌──────────┐    Encrypt     ┌──────────┐    Store      ┌──────────┐    Decrypt     ┌──────────┐
-│  Sender   │──────────────►│  Server   │──────────────►│  Server   │──────────────►│ Receiver  │
-│  (Alice)  │   Socket.IO   │  (Relay)  │   MongoDB    │  (Relay)  │   Socket.IO   │  (Bob)    │
+┌──────────┐    Chiffrer    ┌──────────┐    Stocker     ┌──────────┐   Déchiffrer   ┌──────────┐
+│ Expéditeur│──────────────►│  Serveur  │──────────────►│  Serveur  │──────────────►│Destinataire│
+│  (Alice)  │   Socket.IO   │  (Relais) │   MongoDB    │  (Relais) │   Socket.IO   │  (Bob)    │
 └──────────┘                └──────────┘                └──────────┘                └──────────┘
 ```
 
 ---
 
-## Step-by-Step Flow
+## Flux étape par étape
 
-### 1. Compose Message
+### 1. Rédaction du message
 
-Alice types a message in the chat input. The UI stores the plaintext locally.
+Alice saisit un message dans le champ de chat. L'interface stocke le texte en clair localement.
 
-### 2. Encrypt (Client-Side)
+### 2. Chiffrement (côté client)
 
 ```
-Alice's Device
+Appareil d'Alice
 │
-├─ 1. Ensure session key exists
-│     ├─ Fetch Bob's public key from server (if not cached)
-│     ├─ Import public key as CryptoKey
-│     └─ Derive shared AES-GCM key: ECDH(alicePrivate, bobPublic)
+├─ 1. S'assurer que la clé de session existe
+│     ├─ Récupérer la clé publique de Bob depuis le serveur (si pas en cache)
+│     ├─ Importer la clé publique en tant que CryptoKey
+│     └─ Dériver la clé partagée AES-GCM : ECDH(alicePrivate, bobPublic)
 │
-├─ 2. Encrypt plaintext
-│     ├─ Generate random 12-byte IV
+├─ 2. Chiffrer le texte en clair
+│     ├─ Générer un IV aléatoire de 12 octets
 │     └─ AES-GCM encrypt(sharedKey, IV, plaintext) → ciphertext
 │
-├─ 3. Package envelope
-│     ├─ Generate random 16-byte nonce
-│     └─ Create MessageEnvelope { version, iv, ciphertext, nonce, senderId, timestamp }
+├─ 3. Empaqueter l'enveloppe
+│     ├─ Générer un nonce aléatoire de 16 octets
+│     └─ Créer MessageEnvelope { version, iv, ciphertext, nonce, senderId, timestamp }
 │
-└─ 4. Create optimistic message in local store (shown immediately in UI)
+└─ 4. Créer un message optimiste dans le magasin local (affiché immédiatement dans l'interface)
 ```
 
-### 3. Transmit via Socket.IO
+### 3. Transmission via Socket.IO
 
 ```
-Alice → Server:  'message:send' event
+Alice → Serveur :  événement 'message:send'
 {
   conversationId: "conv_abc123",
-  encryptedPayload: "base64...",   // AES-GCM ciphertext
-  iv: "base64...",                 // 12-byte IV
-  nonce: "base64...",              // 16-byte replay nonce
-  expiresInMs: null,               // optional TTL
-  burnAfterReading: false          // optional
+  encryptedPayload: "base64...",   // Texte chiffré AES-GCM
+  iv: "base64...",                 // IV de 12 octets
+  nonce: "base64...",              // Nonce anti-rejeu de 16 octets
+  expiresInMs: null,               // TTL optionnel
+  burnAfterReading: false          // optionnel
 }
 ```
 
-### 4. Server Processing
+### 4. Traitement par le serveur
 
 ```
-Server receives 'message:send'
+Le serveur reçoit 'message:send'
 │
-├─ 1. Validate JWT (socket auth guard)
-├─ 2. Check socket rate limit
-├─ 3. Validate payload schema (Zod)
-├─ 4. Replay check: Redis SET NX (nonce) → reject if duplicate
-├─ 5. Verify sender is conversation participant
-├─ 6. Create Message document in MongoDB
-│     ├─ Store only: encryptedPayload, iv, nonce, senderId, conversationId
-│     └─ Server CANNOT read the message content
-├─ 7. Update conversation.lastMessageAt
-├─ 8. Emit 'message:new' to all participants in the conversation room
-└─ 9. Send 'message:status' { status: 'sent' } back to sender
+├─ 1. Valider le JWT (garde d'auth socket)
+├─ 2. Vérifier la limite de débit du socket
+├─ 3. Valider le schéma du payload (Zod)
+├─ 4. Vérification anti-rejeu : Redis SET NX (nonce) → rejet si doublon
+├─ 5. Vérifier que l'expéditeur est participant à la conversation
+├─ 6. Créer le document Message dans MongoDB
+│     ├─ Stocker uniquement : encryptedPayload, iv, nonce, senderId, conversationId
+│     └─ Le serveur NE PEUT PAS lire le contenu du message
+├─ 7. Mettre à jour conversation.lastMessageAt
+├─ 8. Émettre 'message:new' à tous les participants dans la salle de conversation
+└─ 9. Envoyer 'message:status' { status: 'sent' } à l'expéditeur
 ```
 
-### 5. Receive and Decrypt (Client-Side)
+### 5. Réception et déchiffrement (côté client)
 
 ```
-Bob's Device receives 'message:new' event
+L'appareil de Bob reçoit l'événement 'message:new'
 │
-├─ 1. Add encrypted message to local store
-├─ 2. Increment unread count for conversation
-├─ 3. Emit 'message:delivered' acknowledgment to server
+├─ 1. Ajouter le message chiffré au magasin local
+├─ 2. Incrémenter le compteur de non-lus pour la conversation
+├─ 3. Émettre l'accusé de réception 'message:delivered' au serveur
 │
-├─ 4. Decrypt message
-│     ├─ Ensure session key: ECDH(bobPrivate, alicePublic) → same shared key
-│     └─ AES-GCM decrypt(sharedKey, iv, ciphertext) → plaintext
+├─ 4. Déchiffrer le message
+│     ├─ S'assurer de la clé de session : ECDH(bobPrivate, alicePublic) → même clé partagée
+│     └─ AES-GCM decrypt(sharedKey, iv, ciphertext) → texte en clair
 │
-├─ 5. Update message in store with decrypted plaintext
-└─ 6. Render in MessageBubble component
+├─ 5. Mettre à jour le message dans le magasin avec le texte déchiffré
+└─ 6. Afficher dans le composant MessageBubble
 ```
 
-### 6. Status Tracking
+### 6. Suivi de statut
 
 ```
-Timeline:
-  Alice sends     → status: 'sending' (optimistic)
-  Server stores   → status: 'sent'
-  Bob receives    → status: 'delivered'
-  Bob views       → status: 'read'
+Chronologie :
+  Alice envoie        → statut : 'sending' (optimiste)
+  Le serveur stocke   → statut : 'sent'
+  Bob reçoit          → statut : 'delivered'
+  Bob consulte        → statut : 'read'
   
-Status updates flow:
-  Server → Alice:  'message:status' { messageId, status: 'delivered' }
-  Server → Alice:  'message:status' { messageId, status: 'read' }
+Flux des mises à jour de statut :
+  Serveur → Alice :  'message:status' { messageId, status: 'delivered' }
+  Serveur → Alice :  'message:status' { messageId, status: 'read' }
 ```
 
 ---
 
-## Special Message Types
+## Types de messages spéciaux
 
-### Burn-After-Reading
+### Lecture unique (Burn-After-Reading)
 
 ```
-Alice sends with burnAfterReading: true
+Alice envoie avec burnAfterReading: true
 │
-├─ Server stores message normally
-├─ Bob receives and decrypts
-├─ Bob reads message → emits 'message:read'
-├─ Server marks as read
-└─ Client removes message from UI after viewing
+├─ Le serveur stocke le message normalement
+├─ Bob reçoit et déchiffre
+├─ Bob lit le message → émet 'message:read'
+├─ Le serveur marque comme lu
+└─ Le client supprime le message de l'interface après consultation
 ```
 
-### Self-Destructing Messages (TTL)
+### Messages autodestructeurs (TTL)
 
 ```
-Alice sends with expiresInMs: 60000 (1 minute)
+Alice envoie avec expiresInMs: 60000 (1 minute)
 │
-├─ Server stores with expiresAt = now + 60s
-├─ MongoDB TTL index auto-deletes after expiry
-└─ Client hides expired messages from UI
+├─ Le serveur stocke avec expiresAt = maintenant + 60s
+├─ L'index TTL de MongoDB supprime automatiquement après expiration
+└─ Le client masque les messages expirés de l'interface
 ```
 
-### Self-Destructing Conversations
+### Conversations autodestructrices
 
 ```
-Conversation created with selfDestruct: true, expiresAt: <timestamp>
+Conversation créée avec selfDestruct: true, expiresAt: <horodatage>
 │
-├─ All messages in conversation inherit the expiry
-└─ MongoDB TTL index auto-deletes conversation and messages after expiry
+├─ Tous les messages de la conversation héritent de l'expiration
+└─ L'index TTL de MongoDB supprime automatiquement la conversation et les messages après expiration
 ```
 
 ---
 
-## Error Cases
+## Cas d'erreur
 
-| Error                         | Handling                                                |
-|-------------------------------|---------------------------------------------------------|
-| Decryption failure            | Display "[Unable to decrypt]" — key mismatch or corruption |
-| Replay detected               | Server rejects with error, message not stored            |
-| Rate limited                  | Server rejects, client shows error toast                 |
-| Socket disconnected           | Message queued locally, retried on reconnect             |
-| Invalid payload               | Zod validation rejects, error returned to client         |
-| Conversation not found        | Server returns 404                                       |
-| User not participant          | Server returns 403                                       |
+| Erreur                           | Traitement                                                    |
+|----------------------------------|---------------------------------------------------------------|
+| Échec du déchiffrement           | Afficher « [Impossible de déchiffrer] » — incompatibilité de clés ou corruption |
+| Rejeu détecté                    | Le serveur rejette avec une erreur, message non stocké         |
+| Limite de débit atteinte         | Le serveur rejette, le client affiche un toast d'erreur        |
+| Socket déconnecté                | Message mis en file d'attente localement, renvoyé à la reconnexion |
+| Payload invalide                 | La validation Zod rejette, erreur retournée au client          |
+| Conversation introuvable         | Le serveur retourne 404                                        |
+| Utilisateur non participant      | Le serveur retourne 403                                        |
 
 ---
 
-## Message Storage
+## Stockage des messages
 
-### MongoDB Document (Server)
+### Document MongoDB (Serveur)
 
 ```javascript
 {
   _id: ObjectId,
   conversationId: ObjectId,
   senderId: ObjectId,
-  encryptedPayload: "base64...",    // Opaque to server
-  iv: "base64...",                  // Opaque to server
-  nonce: "base64...",               // Used for replay protection
+  encryptedPayload: "base64...",    // Opaque pour le serveur
+  iv: "base64...",                  // Opaque pour le serveur
+  nonce: "base64...",               // Utilisé pour la protection anti-rejeu
   burnAfterReading: false,
-  expiresAt: null,                  // or Date for TTL
-  deliveredAt: null,                // or Date
-  readAt: null,                     // or Date
+  expiresAt: null,                  // ou Date pour le TTL
+  deliveredAt: null,                // ou Date
+  readAt: null,                     // ou Date
   createdAt: Date,
   updatedAt: Date
 }
 ```
 
-### Client-Side Store (Zustand)
+### Magasin côté client (Zustand)
 
 ```typescript
 {
@@ -186,8 +186,8 @@ Conversation created with selfDestruct: true, expiresAt: <timestamp>
   senderId: "user_alice",
   encryptedPayload: "base64...",
   iv: "base64...",
-  plaintext: "Hello Bob!",          // Decrypted locally
-  optimistic: false,                // Confirmed by server
-  localId: "temp_123"              // Before server ID assignment
+  plaintext: "Bonjour Bob !",       // Déchiffré localement
+  optimistic: false,                // Confirmé par le serveur
+  localId: "temp_123"              // Avant l'attribution de l'ID par le serveur
 }
 ```

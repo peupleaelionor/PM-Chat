@@ -1,161 +1,161 @@
-# Architecture Overview
+# Vue d'ensemble de l'architecture
 
-> PM-Chat is a privacy-first, end-to-end encrypted messaging platform. The server never sees plaintext messages.
+> PM-Chat est une plateforme de messagerie chiffrée de bout en bout axée sur la confidentialité. Le serveur ne voit jamais les messages en clair.
 
 ---
 
-## System Architecture
+## Architecture du système
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        PM-Chat System                           │
+│                      Système PM-Chat                            │
 │                                                                 │
 │  ┌─────────────┐       ┌─────────────┐       ┌──────────────┐  │
-│  │  Web Client  │◄─────►│   Server    │◄─────►│   Database   │  │
-│  │  (Next.js)   │  WS   │  (Express)  │       │  (MongoDB)   │  │
-│  │              │  HTTP  │             │       │              │  │
+│  │ Client Web   │◄─────►│   Serveur   │◄─────►│ Base de      │  │
+│  │  (Next.js)   │  WS   │  (Express)  │       │ données      │  │
+│  │              │  HTTP  │             │       │ (MongoDB)    │  │
 │  └──────┬───────┘       └──────┬──────┘       └──────────────┘  │
 │         │                      │                                │
 │         │                      │              ┌──────────────┐  │
 │         │               ┌──────┴──────┐       │    Redis      │  │
 │         │               │  Socket.IO   │◄─────►│  (Sessions)  │  │
-│         │               │  (Realtime)  │       │  (Nonces)    │  │
+│         │               │ (Temps réel) │       │  (Nonces)    │  │
 │         └───────────────┴─────────────┘       └──────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Component Layout
+## Organisation des composants
 
 ```
 pm-chat/
 ├── apps/
-│   ├── server/              ← Express + Socket.IO backend
+│   ├── server/              ← Backend Express + Socket.IO
 │   │   ├── src/
-│   │   │   ├── config.ts         ← Environment + runtime configuration
-│   │   │   ├── db.ts             ← MongoDB connection
-│   │   │   ├── redis.ts          ← Redis connection
-│   │   │   ├── index.ts          ← Server bootstrap + graceful shutdown
-│   │   │   ├── models/           ← Mongoose schemas (User, Message, Conversation)
-│   │   │   ├── routes/           ← REST API endpoints
-│   │   │   ├── socket/           ← Socket.IO event handlers + guards
-│   │   │   ├── middleware/       ← Auth, rate limiting, security guards
-│   │   │   └── utils/            ← JWT, logging, security monitor
+│   │   │   ├── config.ts         ← Configuration d'environnement et d'exécution
+│   │   │   ├── db.ts             ← Connexion MongoDB
+│   │   │   ├── redis.ts          ← Connexion Redis
+│   │   │   ├── index.ts          ← Démarrage du serveur + arrêt gracieux
+│   │   │   ├── models/           ← Schémas Mongoose (User, Message, Conversation)
+│   │   │   ├── routes/           ← Points de terminaison API REST
+│   │   │   ├── socket/           ← Gestionnaires d'événements Socket.IO + gardes
+│   │   │   ├── middleware/       ← Auth, limitation de débit, gardes de sécurité
+│   │   │   └── utils/            ← JWT, journalisation, moniteur de sécurité
 │   │   └── Dockerfile
 │   │
-│   └── web/                 ← Next.js 15 frontend
+│   └── web/                 ← Frontend Next.js 15
 │       ├── src/
-│       │   ├── app/              ← Next.js pages and layouts
-│       │   ├── components/       ← UI components (auth, chat, layout, ui)
-│       │   ├── hooks/            ← React hooks (crypto, socket, messages, presence)
+│       │   ├── app/              ← Pages et mises en page Next.js
+│       │   ├── components/       ← Composants UI (auth, chat, mise en page, ui)
+│       │   ├── hooks/            ← Hooks React (crypto, socket, messages, présence)
 │       │   ├── lib/
-│       │   │   ├── crypto/       ← E2EE encryption layer (ECDH + AES-GCM)
-│       │   │   ├── store/        ← Zustand state stores
-│       │   │   ├── api.ts        ← REST API client
-│       │   │   ├── socket.ts     ← Socket.IO client
-│       │   │   └── utils.ts      ← Utility functions
-│       │   ├── workers/          ← Web workers for crypto
-│       │   └── __tests__/        ← Jest tests
+│       │   │   ├── crypto/       ← Couche de chiffrement E2EE (ECDH + AES-GCM)
+│       │   │   ├── store/        ← Magasins d'état Zustand
+│       │   │   ├── api.ts        ← Client API REST
+│       │   │   ├── socket.ts     ← Client Socket.IO
+│       │   │   └── utils.ts      ← Fonctions utilitaires
+│       │   ├── workers/          ← Web workers pour le chiffrement
+│       │   └── __tests__/        ← Tests Jest
 │       └── Dockerfile
 │
 ├── packages/
-│   └── shared/              ← Shared types + validators
+│   └── shared/              ← Types et validateurs partagés
 │       └── src/
-│           ├── types/            ← TypeScript interfaces
-│           └── validators/       ← Zod validation schemas
+│           ├── types/            ← Interfaces TypeScript
+│           └── validators/       ← Schémas de validation Zod
 │
-├── docs/                    ← Project documentation
-├── docker-compose.yml       ← Full-stack Docker setup
-└── package.json             ← Monorepo root (npm workspaces)
+├── docs/                    ← Documentation du projet
+├── docker-compose.yml       ← Configuration Docker complète
+└── package.json             ← Racine du monorepo (npm workspaces)
 ```
 
-## Module Responsibilities
+## Responsabilités des modules
 
-### Crypto Module (`apps/web/src/lib/crypto/`)
+### Module Crypto (`apps/web/src/lib/crypto/`)
 
-The crypto module is **isolated from all UI and network code**. It provides pure functions for:
+Le module crypto est **isolé de tout code UI et réseau**. Il fournit des fonctions pures pour :
 
-| File                 | Responsibility                                   |
-|----------------------|--------------------------------------------------|
-| `keyGeneration.ts`   | Generate ECDH P-256 key pairs, import/export JWK |
-| `keyExchange.ts`     | Derive shared AES-GCM 256 keys via ECDH          |
-| `encrypt.ts`         | AES-GCM 256-bit encryption with random IV         |
-| `decrypt.ts`         | AES-GCM 256-bit decryption                        |
-| `keyStorage.ts`      | Session-scoped private key persistence             |
-| `messagePackaging.ts`| Message envelope creation, nonce generation        |
+| Fichier              | Responsabilité                                           |
+|----------------------|----------------------------------------------------------|
+| `keyGeneration.ts`   | Générer des paires de clés ECDH P-256, importer/exporter JWK |
+| `keyExchange.ts`     | Dériver des clés partagées AES-GCM 256 via ECDH              |
+| `encrypt.ts`         | Chiffrement AES-GCM 256 bits avec IV aléatoire               |
+| `decrypt.ts`         | Déchiffrement AES-GCM 256 bits                               |
+| `keyStorage.ts`      | Persistance des clés privées limitée à la session             |
+| `messagePackaging.ts`| Création d'enveloppes de messages, génération de nonces       |
 
-### Server Module (`apps/server/src/`)
+### Module Serveur (`apps/server/src/`)
 
-| Module          | Responsibility                                      |
-|-----------------|-----------------------------------------------------|
-| `models/`       | MongoDB data models for users, messages, conversations |
-| `routes/`       | REST API endpoints (auth, conversations, messages, attachments, health) |
-| `socket/`       | Real-time event handling (messages, presence, typing, key exchange) |
-| `middleware/`   | Security layers (auth, rate limiting, input guards)  |
-| `utils/`        | Cross-cutting concerns (JWT, logging, security monitoring) |
+| Module          | Responsabilité                                                  |
+|-----------------|-----------------------------------------------------------------|
+| `models/`       | Modèles de données MongoDB pour les utilisateurs, messages, conversations |
+| `routes/`       | Points de terminaison API REST (auth, conversations, messages, pièces jointes, santé) |
+| `socket/`       | Gestion d'événements en temps réel (messages, présence, saisie, échange de clés) |
+| `middleware/`   | Couches de sécurité (auth, limitation de débit, gardes d'entrée)  |
+| `utils/`        | Préoccupations transversales (JWT, journalisation, surveillance de sécurité) |
 
-### Shared Module (`packages/shared/`)
+### Module Partagé (`packages/shared/`)
 
-| Module          | Responsibility                                      |
-|-----------------|-----------------------------------------------------|
-| `types/`        | TypeScript interfaces shared between client & server |
-| `validators/`   | Zod schemas for runtime validation                   |
+| Module          | Responsabilité                                              |
+|-----------------|-------------------------------------------------------------|
+| `types/`        | Interfaces TypeScript partagées entre le client et le serveur |
+| `validators/`   | Schémas Zod pour la validation à l'exécution                  |
 
-## Data Flow
+## Flux de données
 
-### Boot Sequence
+### Séquence de démarrage
 
 ```
-Server Start
+Démarrage du serveur
     │
-    ├─► Connect MongoDB
-    ├─► Connect Redis
-    ├─► Initialize Express middleware
-    │     ├─ Helmet (security headers)
+    ├─► Connexion à MongoDB
+    ├─► Connexion à Redis
+    ├─► Initialisation des middlewares Express
+    │     ├─ Helmet (en-têtes de sécurité)
     │     ├─ CORS
-    │     ├─ Rate limiting
-    │     ├─ Input guards
-    │     └─ JWT auth
-    ├─► Register REST routes
-    ├─► Initialize Socket.IO
-    │     ├─ JWT socket auth guard
-    │     ├─ Socket rate limiter
-    │     └─ Event handlers
-    └─► Listen on PORT (default 4000)
+    │     ├─ Limitation de débit
+    │     ├─ Gardes d'entrée
+    │     └─ Auth JWT
+    ├─► Enregistrement des routes REST
+    ├─► Initialisation de Socket.IO
+    │     ├─ Garde d'auth JWT pour les sockets
+    │     ├─ Limiteur de débit pour les sockets
+    │     └─ Gestionnaires d'événements
+    └─► Écoute sur le PORT (par défaut 4000)
 ```
 
-### Client Boot
+### Démarrage du client
 
 ```
-Next.js App Load
+Chargement de l'application Next.js
     │
-    ├─► Check for persisted auth (localStorage)
-    │     ├─ If found → Restore session, load private key from sessionStorage
-    │     └─ If not → Show login screen
+    ├─► Vérifier l'auth persistante (localStorage)
+    │     ├─ Si trouvée → Restaurer la session, charger la clé privée depuis sessionStorage
+    │     └─ Sinon → Afficher l'écran de connexion
     │
-    ├─► On Login/Register
-    │     ├─ Generate ECDH P-256 key pair
-    │     ├─ Store private key in sessionStorage
-    │     ├─ Send public key to server
-    │     └─ Store auth tokens
+    ├─► À la connexion/inscription
+    │     ├─ Générer une paire de clés ECDH P-256
+    │     ├─ Stocker la clé privée dans sessionStorage
+    │     ├─ Envoyer la clé publique au serveur
+    │     └─ Stocker les jetons d'auth
     │
-    ├─► Initialize Socket.IO connection (JWT auth)
-    │     ├─ Register message handlers
-    │     ├─ Register presence handlers
-    │     └─ Register typing handlers
+    ├─► Initialiser la connexion Socket.IO (auth JWT)
+    │     ├─ Enregistrer les gestionnaires de messages
+    │     ├─ Enregistrer les gestionnaires de présence
+    │     └─ Enregistrer les gestionnaires de saisie
     │
-    └─► Load conversations list
+    └─► Charger la liste des conversations
 ```
 
-## Technology Stack
+## Pile technologique
 
-| Layer          | Technology                                |
-|----------------|-------------------------------------------|
-| Frontend       | Next.js 15, React 18, Tailwind CSS        |
-| State          | Zustand (client), TanStack Query (server)  |
-| Backend        | Node.js, Express, Socket.IO               |
-| Database       | MongoDB (Mongoose)                         |
-| Cache/Sessions | Redis (ioredis)                            |
-| Crypto         | Web Crypto API (ECDH P-256, AES-GCM 256)  |
-| Auth           | JWT (access + refresh tokens)              |
-| Validation     | Zod                                        |
-| Shared Types   | `@pm-chat/shared` TypeScript package       |
+| Couche          | Technologie                               |
+|-----------------|-------------------------------------------|
+| Frontend        | Next.js 15, React 18, Tailwind CSS        |
+| État            | Zustand (client), TanStack Query (serveur) |
+| Backend         | Node.js, Express, Socket.IO               |
+| Base de données | MongoDB (Mongoose)                         |
+| Cache/Sessions  | Redis (ioredis)                            |
+| Crypto          | Web Crypto API (ECDH P-256, AES-GCM 256)  |
+| Auth            | JWT (jetons d'accès + de rafraîchissement) |
+| Validation      | Zod                                        |
+| Types partagés  | Paquet TypeScript `@pm-chat/shared`        |
