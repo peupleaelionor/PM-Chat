@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate } from "../middleware/auth";
+import { authMiddleware as authenticate } from "../middleware/auth";
 import { validate } from "../middleware/inputGuard";
 import {
   createShareLink,
@@ -36,7 +36,7 @@ router.post(
 
       // Verify user is participant
       const conversation = await Conversation.findById(body.conversationId);
-      if (!conversation || !conversation.participants.includes(userId)) {
+      if (!conversation || !conversation.participants.map(String).includes(userId)) {
         res.status(404).json({ error: "Conversation non trouvée" });
         return;
       }

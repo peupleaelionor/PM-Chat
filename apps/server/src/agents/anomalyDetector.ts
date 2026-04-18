@@ -125,7 +125,7 @@ export function recordMessageEvent(
  */
 export function recordLoginEvent(
   userId: string,
-  ip: string,
+  _ip: string,
   fingerprint?: string
 ): { suspicious: boolean; reason?: string } {
   const profile = getOrCreateProfile(userId);

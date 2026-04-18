@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate } from "../middleware/auth";
+import { authMiddleware as authenticate } from "../middleware/auth";
 import { getAllTiers } from "../premium/tiers";
 import { getUserTier, setUserTier } from "../premium/middleware";
 import { isFeatureAvailable } from "../premium/tiers";

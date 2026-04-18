@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate } from "../middleware/auth";
+import { authMiddleware as authenticate } from "../middleware/auth";
 import { getAllAgents, generateThreatReport, recordSecurityEvent } from "../agents";
 import { getUserTier } from "../premium/middleware";
 import { logger } from "../utils/logger";

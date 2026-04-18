@@ -43,7 +43,7 @@ const MALICIOUS_PATTERNS = [
   /(?:SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER)\s/i, // SQL injection
   /<script[\s>]/i, // XSS
   /\.\.\//g, // Path traversal
-  /\x00/g, // Null byte injection
+  new RegExp("\\0", "g"), // Null byte injection
 ];
 
 function getOrCreateRecord(target: string): ThreatRecord {
