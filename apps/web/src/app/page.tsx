@@ -21,7 +21,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="flex h-screen flex-col items-center justify-center bg-bg-primary px-6 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-bg-primary px-6 text-center">
       <div className="mb-8 flex flex-col items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-accent-primary shadow-2xl">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="h-10 w-10">
@@ -33,24 +33,49 @@ export default function HomePage() {
       </div>
 
       <div className="w-full max-w-sm space-y-4">
-        <div className="rounded-2xl bg-bg-secondary p-6 space-y-4">
-          <p className="text-xs text-text-muted uppercase tracking-widest">Votre compte anonyme</p>
+        {/* Show profile card only when authenticated */}
+        {isAuthenticated && nickname ? (
+          <div className="rounded-2xl bg-bg-secondary p-6 space-y-4">
+            <p className="text-xs text-text-muted uppercase tracking-widest">Votre compte anonyme</p>
 
-          {nickname && (
             <div className="flex flex-col items-center gap-2">
               <Avatar nickname={nickname} size="lg" />
               <p className="font-semibold text-text-primary">{nickname}</p>
             </div>
-          )}
 
-          <div className="rounded-lg bg-bg-tertiary p-3 break-all text-xs text-text-secondary font-mono">
-            {userId ?? 'Génération…'}
+            <div className="rounded-lg bg-bg-tertiary p-3 break-all text-xs text-text-secondary font-mono">
+              {userId ?? 'Génération…'}
+            </div>
+
+            <Button variant="ghost" size="sm" onClick={copyId} className="w-full">
+              📋 Copier l&apos;ID d&apos;invitation
+            </Button>
           </div>
-
-          <Button variant="ghost" size="sm" onClick={copyId} className="w-full">
-            📋 Copier l&apos;ID d&apos;invitation
-          </Button>
-        </div>
+        ) : (
+          <div className="rounded-2xl bg-bg-secondary p-6 space-y-4">
+            <p className="text-xs text-text-muted uppercase tracking-widest">Connexion automatique</p>
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-primary border-t-transparent" />
+              <p className="text-sm text-text-secondary">
+                Création de votre identité anonyme…
+              </p>
+            </div>
+            <div className="space-y-2 text-left text-sm text-text-secondary">
+              <div className="flex items-center gap-2">
+                <span className="text-accent-secondary">✓</span>
+                <span>Aucun mot de passe requis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-accent-secondary">✓</span>
+                <span>Chiffrement de bout en bout</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-accent-secondary">✓</span>
+                <span>Identité totalement anonyme</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Button
           variant="primary"
@@ -59,7 +84,7 @@ export default function HomePage() {
           className="w-full"
           disabled={!isAuthenticated}
         >
-          Ouvrir le chat →
+          {isAuthenticated ? 'Ouvrir le chat →' : 'Connexion en cours…'}
         </Button>
 
         <p className="text-xs text-text-muted">
