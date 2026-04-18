@@ -1,105 +1,17 @@
 import http from "http";
-import path from "path";
-import fs from "fs";
-import express from "express";
-import helmet from "helmet";
-import cors from "cors";
-
 import { config } from "./config";
 import { logger } from "./utils/logger";
 import { connectDB, disconnectDB } from "./db";
 import { connectRedis, disconnectRedis } from "./redis";
 import { initSocket } from "./socket";
-import { globalRateLimiter } from "./middleware/rateLimiter";
-import { sanitizeBody } from "./middleware/inputGuard";
-import { errorHandler } from "./middleware/errorHandler";
 import { clearBurnTimers } from "./socket/handlers/message";
 import { Message } from "./models/Message";
 import { Conversation } from "./models/Conversation";
-import { networkGuard, integrityGuard, sessionGuard } from "./middleware/securityGuards";
 import { cleanupSocketBuckets } from "./middleware/socketRateLimiter";
-
-// ── Route imports ─────────────────────────────────────────────────────────────
-import healthRouter from "./routes/health";
-import authRouter from "./routes/auth";
-import conversationsRouter from "./routes/conversations";
-import messagesRouter from "./routes/messages";
-import attachmentsRouter from "./routes/attachments";
-import securityRouter from "./routes/security";
-import premiumRouter from "./routes/premium";
-import shareRouter from "./routes/share";
-
-// ── Ensure upload directory exists ────────────────────────────────────────────
-const uploadDir = path.resolve(config.UPLOAD_DIR);
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  logger.info("Created upload directory", { path: uploadDir });
-}
-
-// ── Express app setup ─────────────────────────────────────────────────────────
-const app = express();
-
-// Security headers
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "same-origin" },
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'none'"],
-        connectSrc: ["'self'"],
-      },
-    },
-  })
-);
-
-// CORS
-app.use(
-  cors({
-    origin: config.corsOrigins,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Body parsing
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: false, limit: "1mb" }));
-
-// Input sanitization (strip NUL bytes)
-app.use(sanitizeBody);
-
-// Security guards
-app.use(networkGuard);
-app.use(integrityGuard);
-
-// Global rate limiter
-app.use(globalRateLimiter);
-
-// Session guard (applied after auth routes for authenticated routes)
-app.use("/api/conversations", sessionGuard);
-app.use("/api/messages", sessionGuard);
-app.use("/api/attachments", sessionGuard);
-
-// ── Routes ────────────────────────────────────────────────────────────────────
-app.use("/health", healthRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/conversations", conversationsRouter);
-app.use("/api/messages", messagesRouter);
-app.use("/api/attachments", attachmentsRouter);
-app.use("/api/security", securityRouter);
-app.use("/api/premium", premiumRouter);
-app.use("/api/share", shareRouter);
-
-// 404 handler for unknown routes
-app.use((_req, res) => {
-  res.status(404).json({ error: "Not found" });
-});
-
-// Global error handler (must be last)
-app.use(errorHandler);
+import { createExpressApp } from "./createApp";
 
 // ── HTTP + Socket.IO server ───────────────────────────────────────────────────
+const app = createExpressApp();
 const httpServer = http.createServer(app);
 initSocket(httpServer);
 
