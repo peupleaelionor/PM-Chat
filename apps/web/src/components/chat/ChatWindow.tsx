@@ -43,7 +43,7 @@ export function ChatWindow({ conversation }: ChatWindowProps) {
   const peer = conversation.participants.find((p) => p._id !== userId);
   const { isOnline } = usePresence(peer?._id);
 
-  const messages = allMessages[conversation._id] ?? [];
+  const messages = useMemo(() => allMessages[conversation._id] ?? [], [allMessages, conversation._id]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useMessages(conversation._id);
