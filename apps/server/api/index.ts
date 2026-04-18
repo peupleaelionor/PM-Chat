@@ -8,7 +8,7 @@
  * - Redis adapter enables cross-container pub/sub (required for multi-instance Socket.IO)
  * - DB + Redis connections are lazily initialized and cached per container
  */
-import type { IncomingMessage, ServerResponse } from "http";
+import type { IncomingMessage, Server as HTTPServer, ServerResponse } from "http";
 import { Server as IOServer } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 
@@ -28,8 +28,8 @@ import { logger } from "../src/utils/logger";
 /** Express application — created once and reused. */
 const expressApp = createExpressApp();
 
-/** Tracks whether Socket.IO has been wired up on this container's HTTP server. */
-type ServerWithIO = { io?: IOServer };
+/** Extends Vercel's underlying http.Server to cache the Socket.IO instance. */
+type ServerWithIO = HTTPServer & { io?: IOServer };
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
@@ -48,8 +48,7 @@ export default async function handler(
     // Duplicate creates a fresh ioredis client for SUBSCRIBE (required by Redis adapter)
     const subClient = pubClient.duplicate();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const io = new IOServer(srv as any, {
+    const io = new IOServer(srv, {
       path: "/socket.io",
       cors: {
         origin: config.corsOrigins,
@@ -100,7 +99,9 @@ export default async function handler(
     logger.info("Socket.IO initialized on serverless container");
   }
 
-  // Delegate all HTTP requests to Express (REST routes + Socket.IO HTTP polling)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expressApp(req as any, res);
+  // Delegate all HTTP requests to Express (REST routes + Socket.IO HTTP polling).
+  // The Vercel runtime provides a standard Node.js IncomingMessage/ServerResponse
+  // pair that is structurally compatible with Express's Request/Response — the
+  // cast via `unknown` is safe here and avoids a leaky `any`.
+  expressApp(req as unknown as Parameters<typeof expressApp>[0], res);
 }

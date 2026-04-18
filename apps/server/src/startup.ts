@@ -33,8 +33,10 @@ export async function ensureConnected(): Promise<void> {
     }
 
     const redis = getRedis();
-    // ioredis uses lazyConnect:true — connect only if not already connected/connecting
-    if (redis.status === "close" || redis.status === "end" || redis.status === "wait") {
+    // Only call connect() when the client is not already connected or connecting.
+    // ioredis statuses that need connect(): "close", "end", "wait"
+    const connectedStatuses = new Set(["connect", "connecting", "ready", "reconnecting"]);
+    if (!connectedStatuses.has(redis.status)) {
       await redis.connect();
     }
 
