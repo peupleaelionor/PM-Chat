@@ -1,4 +1,5 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import { authMiddleware as authenticate } from "../middleware/auth";
 import { validate } from "../middleware/inputGuard";
 import {
@@ -33,6 +34,12 @@ router.post(
         oneTimeView: boolean;
         ipWhitelist: string[];
       };
+
+      // Validate conversationId format before querying
+      if (!mongoose.Types.ObjectId.isValid(body.conversationId)) {
+        res.status(400).json({ error: "Identifiant de conversation invalide" });
+        return;
+      }
 
       // Verify user is participant
       const conversation = await Conversation.findById(body.conversationId);

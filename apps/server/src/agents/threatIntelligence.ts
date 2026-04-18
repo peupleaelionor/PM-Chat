@@ -30,6 +30,7 @@ interface ThreatSignal {
 }
 
 const threatDatabase = new Map<string, ThreatRecord>();
+const QUARANTINE_DURATION_MS = 3_600_000; // 1 hour
 const ACTION_THRESHOLDS: Record<ThreatAction, number> = {
   allow: 0,
   warn: 20,
@@ -102,7 +103,7 @@ export function reportThreatSignal(
   record.lastAction = action;
 
   if (action === "quarantine") {
-    record.quarantineUntil = now + 3_600_000; // 1 hour quarantine
+    record.quarantineUntil = now + QUARANTINE_DURATION_MS;
     logger.warn("ThreatIntelligence: Target quarantined", { target, score: record.score });
   }
 

@@ -29,6 +29,7 @@ export interface StoredLink {
 // In-memory store (production would use Redis/DB)
 const linkStore = new Map<string, StoredLink>();
 const CLEANUP_INTERVAL_MS = 60_000;
+const INACTIVE_LINK_RETENTION_MS = 86_400_000; // 24 hours
 
 /**
  * Generate a secure share token (URL-safe, 32 bytes).
@@ -190,7 +191,7 @@ export function getLinkGuardMetrics(): {
 setInterval(() => {
   const now = new Date();
   for (const [token, link] of linkStore.entries()) {
-    if (now > link.expiresAt || (!link.active && now.getTime() - link.createdAt.getTime() > 86_400_000)) {
+    if (now > link.expiresAt || (!link.active && now.getTime() - link.createdAt.getTime() > INACTIVE_LINK_RETENTION_MS)) {
       linkStore.delete(token);
     }
   }

@@ -26,6 +26,7 @@ interface SessionFingerprint {
 const sessions = new Map<string, SessionFingerprint>(); // tokenJti -> fingerprint
 const userSessions = new Map<string, Set<string>>(); // userId -> Set<jti>
 const MAX_CONCURRENT_SESSIONS = 3;
+const SESSION_INACTIVE_TIMEOUT_MS = 900_000; // 15 minutes
 
 /**
  * Generate a session fingerprint from request characteristics.
@@ -189,7 +190,7 @@ export function getSessionProtectorMetrics(): {
 
 // Cleanup expired sessions every 5 minutes
 setInterval(() => {
-  const cutoff = Date.now() - 900_000; // 15 min inactive
+  const cutoff = Date.now() - SESSION_INACTIVE_TIMEOUT_MS;
   for (const [jti, session] of sessions.entries()) {
     if (session.lastSeen < cutoff) {
       const userSessionSet = userSessions.get(session.userId);
