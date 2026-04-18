@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'http://localhost:4000';
+const WS_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:4000';
 
 let socket: Socket | null = null;
 
@@ -18,7 +18,9 @@ export function initSocket(token: string): Socket {
 
   socket = io(WS_URL, {
     auth: { token },
-    transports: ['websocket'],
+    // polling first so the connection works on serverless (Vercel) out of the box;
+    // the engine upgrades to WebSocket automatically when available.
+    transports: ['polling', 'websocket'],
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
   });

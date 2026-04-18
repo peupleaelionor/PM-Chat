@@ -1,6 +1,8 @@
 import { Server as IOServer } from "socket.io";
 import { Server as HTTPServer } from "http";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { config } from "../config";
+import { getRedis } from "../redis";
 import { socketAuthGuard } from "./guards";
 import { registerPresenceHandlers } from "./handlers/presence";
 import { registerConversationHandlers } from "./handlers/conversation";
@@ -9,17 +11,23 @@ import { logger } from "../utils/logger";
 import { isSocketRateLimited } from "../middleware/socketRateLimiter";
 
 export function initSocket(httpServer: HTTPServer): IOServer {
+  const pubClient = getRedis();
+  const subClient = pubClient.duplicate();
+
   const io = new IOServer(httpServer, {
     cors: {
       origin: config.corsOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },
-    // Prefer WebSocket; fall back to polling for restricted networks
+    // Support both WebSocket and polling (polling required on serverless platforms)
     transports: ["websocket", "polling"],
     pingInterval: 20_000,
     pingTimeout: 10_000,
   });
+
+  // Redis adapter for cross-instance broadcasting (critical for multi-instance deployments)
+  io.adapter(createAdapter(pubClient, subClient));
 
   // Apply JWT auth middleware to every socket connection
   io.use(socketAuthGuard);
