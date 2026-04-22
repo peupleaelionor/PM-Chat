@@ -13,8 +13,8 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   WEB_HEALTHCHECK_PATH: /api/health
-  WEB_HEALTHCHECK_RETRIES: "6"
-  WEB_HEALTHCHECK_RETRY_DELAY: "10"
+  WEB_HEALTHCHECK_RETRIES: 6
+  WEB_HEALTHCHECK_RETRY_DELAY: 10
 
 jobs:
   lint-and-test:
@@ -57,6 +57,7 @@ jobs:
         working-directory: apps/web
       - name: Verify deployed health endpoint
         run: |
+          # Extract the deployment URL from CLI output (supports nested subdomains).
           DEPLOY_URL=$(grep -Eo 'https://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)*\.vercel\.app' /tmp/vercel-deploy-output.txt | tail -n1)
           if [ -z "$DEPLOY_URL" ]; then
             echo "Unable to detect deployed URL from Vercel output"
