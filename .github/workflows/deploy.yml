@@ -55,14 +55,17 @@ jobs:
         working-directory: apps/web
       - name: Verify deployed health endpoint
         run: |
-          DEPLOY_URL=$(grep -Eo 'https://[a-zA-Z0-9][a-zA-Z0-9.-]*\.vercel\.app' /tmp/vercel-deploy-output.txt | tail -n1)
+          DEPLOY_URL=$(grep -Eo 'https://[a-zA-Z0-9_][a-zA-Z0-9._-]*\.vercel\.app' /tmp/vercel-deploy-output.txt | tail -n1)
           if [ -z "$DEPLOY_URL" ]; then
             echo "Unable to detect deployed URL from Vercel output"
             exit 1
           fi
-          echo "Checking deployment health on $DEPLOY_URL${WEB_HEALTHCHECK_PATH}"
+          BASE_URL="${DEPLOY_URL%/}"
+          HEALTH_PATH="/${WEB_HEALTHCHECK_PATH#/}"
+          HEALTH_URL="${BASE_URL}${HEALTH_PATH}"
+          echo "Checking deployment health on $HEALTH_URL"
           for i in {1..6}; do
-            if curl -fsS --max-time 10 "$DEPLOY_URL${WEB_HEALTHCHECK_PATH}" >/dev/null; then
+            if curl -fsS --max-time 10 "$HEALTH_URL" >/dev/null; then
               echo "Health check passed"
               exit 0
             fi
