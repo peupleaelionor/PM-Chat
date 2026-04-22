@@ -5,7 +5,8 @@
   "installCommand": "npm install",
   "env": {
     "NEXT_PUBLIC_API_URL": "@pm-chat-api-url",
-    "NEXT_PUBLIC_SOCKET_URL": "@pm-chat-socket-url"
+    "NEXT_PUBLIC_SOCKET_URL": "@pm-chat-socket-url",
+    "NEXT_PUBLIC_WS_URL": "@pm-chat-socket-url"
   },
   "headers": [
     {

@@ -93,7 +93,7 @@ export function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
-      `connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL ?? ''} ${process.env.NEXT_PUBLIC_SOCKET_URL ?? ''} wss: ws:`,
+      `connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL ?? ''} ${process.env.NEXT_PUBLIC_SOCKET_URL ?? process.env.NEXT_PUBLIC_WS_URL ?? ''} wss: ws:`,
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
