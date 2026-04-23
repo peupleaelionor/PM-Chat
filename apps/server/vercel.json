@@ -13,6 +13,11 @@
     { "path": "/api/cron", "schedule": "* * * * *" }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "MONGODB_URI": "@pm-chat-mongodb-uri",
+    "REDIS_URL": "@pm-chat-redis-url",
+    "JWT_SECRET": "@pm-chat-jwt-secret",
+    "JWT_REFRESH_SECRET": "@pm-chat-jwt-refresh-secret",
+    "CORS_ORIGINS": "@pm-chat-cors-origins"
   }
 }
