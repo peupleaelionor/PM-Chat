@@ -2,5 +2,39 @@
   "framework": "nextjs",
   "buildCommand": "cd ../.. && npm run build --workspace=packages/shared && npm run build --workspace=apps/web",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && npm install"
+  "installCommand": "cd ../.. && npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@pm-chat-api-url",
+    "NEXT_PUBLIC_SOCKET_URL": "@pm-chat-socket-url",
+    "NEXT_PUBLIC_WS_URL": "@pm-chat-socket-url"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" },
+        { "key": "X-Security-Agent", "value": "pm-chat-vercel" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/share/:token",
+      "destination": "/api/share?token=:token"
+    }
+  ],
+  "regions": ["cdg1"]
 }

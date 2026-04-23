@@ -109,7 +109,8 @@ Tous les services incluent des vérifications de santé avec un ordonnancement d
 | Variable               | Requis | Par défaut             | Description              |
 |------------------------|--------|------------------------|--------------------------|
 | `NEXT_PUBLIC_API_URL`  | Oui    | `http://localhost:4000` | URL de l'API backend     |
-| `NEXT_PUBLIC_WS_URL`   | Oui    | `http://localhost:4000` | URL WebSocket            |
+| `NEXT_PUBLIC_SOCKET_URL` | Oui  | `http://localhost:4000` | URL WebSocket            |
+| `NEXT_PUBLIC_WS_URL`     | Non  | —                       | Alias legacy (compatibilité) |
 
 ### Liste de vérification pour la production
 
@@ -140,7 +141,8 @@ Tous les services incluent des vérifications de santé avec un ordonnancement d
 2. Définissez le répertoire racine sur `apps/web`
 3. Configurez les variables d'environnement :
    - `NEXT_PUBLIC_API_URL` = l'URL de votre serveur
-   - `NEXT_PUBLIC_WS_URL` = l'URL de votre serveur
+   - `NEXT_PUBLIC_SOCKET_URL` = l'URL de votre serveur
+   - `NEXT_PUBLIC_WS_URL` (optionnel) = alias legacy, même valeur
 4. Déployez
 
 ---
