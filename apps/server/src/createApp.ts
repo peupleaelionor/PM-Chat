@@ -16,6 +16,7 @@ import authRouter from "./routes/auth";
 import conversationsRouter from "./routes/conversations";
 import messagesRouter from "./routes/messages";
 import attachmentsRouter from "./routes/attachments";
+import leadsRouter from "./routes/leads";
 
 /**
  * Creates and returns a fully-configured Express application.
@@ -84,6 +85,7 @@ export function createExpressApp(): express.Express {
   app.use("/api/conversations", conversationsRouter);
   app.use("/api/messages", messagesRouter);
   app.use("/api/attachments", attachmentsRouter);
+  app.use("/api/leads", leadsRouter);
 
   // ── 404 fallback ──────────────────────────────────────────────────────────────
   app.use((_req, res) => {
