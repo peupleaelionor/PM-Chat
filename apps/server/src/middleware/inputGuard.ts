@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { AnyZodObject, ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 /**
  * Factory that returns an Express middleware validating the request body
- * against a Zod schema. Sends a structured 400 on failure so clients
- * can surface meaningful error messages.
+ * against a Zod schema. Accepts any Zod schema type (objects, discriminated
+ * unions, etc.). Sends a structured 400 on failure so clients can surface
+ * meaningful error messages.
  */
-export function validate(schema: AnyZodObject) {
+export function validate(schema: z.ZodTypeAny) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Replace req.body with the parsed (and coerced) value so downstream

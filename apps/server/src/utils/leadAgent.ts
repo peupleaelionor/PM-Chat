@@ -21,7 +21,7 @@ export async function processLead(lead: ILead): Promise<void> {
   if (duplicateCount > 0) {
     logger.warn("lead:duplicate", {
       leadId: lead._id.toString(),
-      email: lead.email,
+      emailDomain: lead.email.split("@")[1] ?? "unknown",
       type: lead.type,
       duplicatesFound: duplicateCount,
     });
